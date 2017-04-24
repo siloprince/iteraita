@@ -312,7 +312,7 @@ function atprocess(byhand) {
   var maxRows = sheet.getMaxRows();
   for (var fi = 0; fi < formulaList.length; fi++) {
     var col = fi + 1;
-    if (!(formula[fi])) {
+    if (!(formulaList[fi])) {
       break;
     }
     if (formulaList[fi].indexOf('@') === 0) {
