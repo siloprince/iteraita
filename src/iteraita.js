@@ -1,10 +1,14 @@
+function info() {
+}
 function onEdit(ev) {
-  var spread = SpreadsheetApp.getActive();
+  var targetRange = ev.range;
+  var sheet = targetRange.getSheet();
+  var spread = sheet.getParent();
   var itemNameListRange = spread.getRangeByName('__itemNameList__');
   var itemNameListRow = itemNameListRange.getRow();
   var formulaListRange = spread.getRangeByName('__formulaList__');
   var formulaListRow = formulaListRange.getRow();
-  var targetRange = ev.range;
+
   var targetRow = targetRange.getRow();
   var targetHeight = targetRange.getHeight();
 
@@ -298,11 +302,7 @@ function onEdit(ev) {
     return str;
   }
 }
-function cron() {
-  atprocess(false);
-}
-function atprocess(byhand) {
-  var spread = SpreadsheetApp.getActive();
+function atprocess(spread, byhand) {
   var range = spread.getRangeByName('__formulaList__');
   var frow = range.getRow() + 1;
   var formulaList = range.getValues()[0];
@@ -358,9 +358,6 @@ function atprocess(byhand) {
       }
     }
   }
-}
-function hand() {
-  atprocess(true);
 }
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Iteraita').addItem('手動イテレーション', 'hand').addToUi();
