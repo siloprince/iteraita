@@ -360,5 +360,5 @@ function hand() {
   atprocess(true);
 }
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('はかせ').addItem('手動イタレーション', 'hand').addToUi();
+  SpreadsheetApp.getUi().createMenu('イテレイタ').addItem('手動イテレーション', 'hand').addToUi();
 }
