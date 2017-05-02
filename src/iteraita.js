@@ -303,6 +303,7 @@ function onEdit(ev) {
     return str;
   }
 }
+
 function atprocess(spread, byhand) {
   var range = spread.getRangeByName('__formulaList__');
   var frow = range.getRow() + 1;
@@ -314,7 +315,7 @@ function atprocess(spread, byhand) {
   for (var fi = 0; fi < formulaList.length; fi++) {
     var col = fi + 1;
     if (!(formulaList[fi])) {
-      break;
+      continue;
     }
     if (formulaList[fi].indexOf('@') === 0) {
       var timeout = -1;
@@ -335,7 +336,17 @@ function atprocess(spread, byhand) {
             break;
           }
           var fv = formulas[fj][0];
+          if (!fv) {
+            fv = '';
+          } else {
+            fv = fv.toString();
+          }
           var nfv = formulas[fj + 1][0];
+          if (!nfv) {
+            nfv = '';
+          } else {
+            nfv = nfv.toString();
+          }
           if (fv.indexOf('&T(N("__#') > -1 && nfv.length === 0) {
 
             if (/&T\(N\("__#([0-9\.]+)__/.test(fv)) {
@@ -345,20 +356,58 @@ function atprocess(spread, byhand) {
 
               if (time > timestamp + timeout * 60 * 1000) {
 
-                var f = sheet.getRange(frow, col).getFormula().replace(/^=/, '').replace(/iferror\(T\(N\(to_text\(/, '').replace(/\)\)\),""\)$/, '');
                 var therange = sheet.getRange(startRow + fj + 1, col);
-                therange.setFormula(f);
-                var time = (new Date()).getTime();
-                var val = therange.getValue();
-                therange.setFormula('"' + val + '"&T(N("__#' + time + '__"))');
+                setTimestamp(therange, frow);
               }
             }
+            break;
+          } else if (fv.length === 0) {
+
+            var therange = sheet.getRange(startRow + fj, col);
+            setTimestamp(therange, frow);
             break;
           }
         }
       }
     }
   }
+}
+function setTimestamp(range, frow) {
+  var sheet = range.getSheet();
+  var col = range.getColumn();
+  var f = sheet.getRange(frow, col).getFormula().replace(/^=/, '').replace(/iferror\(T\(N\(to_text\(/, '').replace(/\)\)\),""\)$/, '');
+  range.setFormula(f);
+  var time = (new Date()).getTime();
+  var val = range.getValue();
+  range.setFormula('"' + val + '"&T(N("__#' + time + '__"))');
+}
+function getSidebar() {
+  var html = HtmlService.createHtmlOutputFromFile('Sidebar')
+    .setTitle('Iteraita')
+    .setWidth(600);
+  return html;
+}
+function clear(spread, all) {
+  var range = spread.getActiveRange();
+  var sheet = range.getSheet();
+  var formulaRange = spread.getRangeByName('__formulaList__');
+  var frozenRows = sheet.getFrozenRows();
+  var maxRows = sheet.getMaxRows();
+  var values;
+  var offset = 1;
+  if (!all) {
+    offset = range.getColumn();
+    values = sheet.getRange(formulaRange.getRow(), range.getColumn(), 1, range.getWidth()).getValues();
+  } else {
+    values = formulaRange.getValues();
+  }
+  for (var vi = 0; vi < values[0].length; vi++) {
+    var val = values[0][vi];
+    if (/^\s*@/.test(val.toString())) {
+      sheet.getRange(frozenRows + 1, vi + offset, maxRows - frozenRows, 1).setValue('');
+    }
+  }
+  return "clear:" + all;
 }
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Iteraita').addItem('手動イテレーション', 'hand').addToUi();

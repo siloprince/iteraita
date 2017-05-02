@@ -9,6 +9,12 @@ function hand() {
   var spread = SpreadsheetApp.getActive();
   iteraita.atprocess(spread,true);
 }
+function clear(all) {
+  var spread = SpreadsheetApp.getActive();
+  iteraita.clear(spread,all);
+}
 function onOpen() {
-  iteraita.onOpen();
+    var sidebar = iteraita.getSidebar();
+    SpreadsheetApp.getUi() 
+      .showSidebar(sidebar);
 }

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+
+    <br/>
+    <button id="once">一回実行</button>
+    <br/>
+    <span style="font-size:8px;">複数回実行：</span>
+    <select id="duration">
+      <option value="0">実行間隔と回数を選択してください</option>
+      <option value="2">2秒 x 10回</option>
+      <option value="5">5秒 x 20回</option>
+      <option value="10">10秒 x 30回</option>
+      <option value="15">15秒 x 40回</option>
+      <option value="60">60秒 x 100回</option>
+    </select>
+    <br/>
+    <button id="clear_all">全列の実行値をクリア</button>
+    <br/>
+    <button id="clear_selected">選択列の実行値をクリア</button>
+    <script type="text/javascript">
+    var btn_all = document.querySelector('button#clear_all');
+    btn_all.addEventListener('click',function(ev){
+       google.script.run
+         .withFailureHandler(onFailure)
+         .withSuccessHandler(onSuccess)
+         .clear(true);
+    },false);    
+    var btn_sel = document.querySelector('button#clear_selected');
+    btn_sel.addEventListener('click',function(ev){
+       google.script.run
+         .withFailureHandler(onFailure)
+         .withSuccessHandler(onSuccess)
+         .clear(false);
+    },false);
+    var sel = document.querySelector('select#duration');
+    sel.addEventListener('change',function(ev){
+      var val = parseInt(ev.target.value,10);
+      if (val===2) {
+        main(2,10);
+      } else if (val===5) {
+        main(5,20);
+      } else if (val===10) {
+        main(10,30);
+      } else if (val===15) {
+        main(15,40);
+      } else if (val===60) {
+        main(60,100);
+      }
+    },false);
+    var once = document.querySelector('button#once');
+    once.addEventListener('click',function(ev){
+       google.script.run
+         .withFailureHandler(onFailure)
+         .withSuccessHandler(onSuccess)
+         .withUserObject(this)
+         .hand();
+    },false);
+    function onFailure(error) {
+      console.error(error);
+    }
+    function onSuccess(ret) {
+      console.log('success:'+ret);
+    }
+    function main(duration,times) {
+       if (times<=0) {
+          return;
+       }
+       var val = parseInt(document.querySelector('select#duration').value,10);
+       if (val!==duration) {
+         return;
+       }
+       google.script.run
+         .withFailureHandler(onFailure)
+         .withSuccessHandler(onSuccess)
+         .hand();
+          
+       var nextMain = (function () {
+           return function () { main(duration,times-1);};
+       })();
+       window.setTimeout(nextMain, duration*1000);
+    }
+
+    </script>
+  </body>
+</html>
+
+
