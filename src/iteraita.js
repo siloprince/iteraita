@@ -372,7 +372,7 @@ function atprocess(spread, byhand) {
       }
     }
   }
-  return 'atprocess '+byhand;
+  return 'atprocess ' + byhand;
 }
 function setTimestamp(range, frow) {
   var sheet = range.getSheet();
@@ -405,10 +405,14 @@ function clear(spread, all) {
   }
   return "clear:" + all;
 }
-function onOpen(ui) {
-  var sidebar = HtmlService.createHtmlOutputFromFile('Sidebar')
+function onOpen(spread, ui, sidebar) {
+  if (!sidebar) {
+    ui.createMenu('Iteraita').addItem('サイドバーを開く', 'openSidebar').addToUi();
+    return;
+  }
+  var html = HtmlService.createHtmlOutputFromFile('Sidebar')
     .setTitle('Iteraita')
     .setWidth(300);
-  ui.showSidebar(sidebar);
+  ui.showSidebar(html);
   return true;
 }

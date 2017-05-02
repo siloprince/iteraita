@@ -14,6 +14,12 @@ function clear(all) {
   return iteraita.clear(spread, all);
 }
 function onOpen() {
+  var spread = SpreadsheetApp.getActive();
   var ui = SpreadsheetApp.getUi();
-  return iteraita.onOpen(ui);
+  return iteraita.onOpen(spread,ui,false);
+}
+function openSidebar() {
+  var spread = SpreadsheetApp.getActive();
+  var ui = SpreadsheetApp.getUi();
+  return iteraita.onOpen(spread,ui,true);
 }
