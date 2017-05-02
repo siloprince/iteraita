@@ -46,7 +46,8 @@ function onEdit(ev) {
     var endw = startw + targetRange.getWidth() - 1;
     updateFormulas(formulaList, formulaListRange, startw, endw);
   }
-  return;
+  return true;
+
   function recoverFromFormulas(range) {
 
     var sheet = range.getSheet();
@@ -371,6 +372,7 @@ function atprocess(spread, byhand) {
       }
     }
   }
+  return 'atprocess '+byhand;
 }
 function setTimestamp(range, frow) {
   var sheet = range.getSheet();
@@ -380,12 +382,6 @@ function setTimestamp(range, frow) {
   var time = (new Date()).getTime();
   var val = range.getValue();
   range.setFormula('"' + val + '"&T(N("__#' + time + '__"))');
-}
-function getSidebar() {
-  var html = HtmlService.createHtmlOutputFromFile('Sidebar')
-    .setTitle('Iteraita')
-    .setWidth(600);
-  return html;
 }
 function clear(spread, all) {
   var range = spread.getActiveRange();
@@ -409,6 +405,10 @@ function clear(spread, all) {
   }
   return "clear:" + all;
 }
-function onOpen() {
-  SpreadsheetApp.getUi().createMenu('Iteraita').addItem('手動イテレーション', 'hand').addToUi();
+function onOpen(ui) {
+  var sidebar = HtmlService.createHtmlOutputFromFile('Sidebar')
+    .setTitle('Iteraita')
+    .setWidth(300);
+  ui.showSidebar(sidebar);
+  return true;
 }
