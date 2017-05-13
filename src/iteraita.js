@@ -446,7 +446,7 @@ function clear(spread, all) {
 }
 function onOpen(spread, ui, sidebar) {
   if (!sidebar) {
-    ui.createMenu('Iteraita').addItem('サイドバーを開く', 'openSidebar').addItem('リセット', 'reset').addToUi();
+    ui.createMenu('Iteraita').addItem('サイドバーを開く', 'openSidebar').addItem('リフレッシュ', 'refresh').addItem('リセット', 'reset').addToUi();
     return;
   }
   var html = HtmlService.createHtmlOutputFromFile('Sidebar')
@@ -499,4 +499,14 @@ function reset(spread) {
     sheet.setRowHeight(ri+1,height);
   }
   sheet.getRange(4,1,1,cols).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address('+maxRows+',column(),4))),"")');
+}
+
+function refresh(spread) {
+  var sheet = spread.getActiveSheet();
+  var sheetName = sheet.getName();
+  var formulaRange = spread.getRange("'"+sheetName+"'!__formulaList__");
+  var maxRows = sheet.getMaxRows();
+  var maxCols = sheet.getMaxColumns();
+  formulaRange.setValues(formulaRange.getValues());
+  sheet.getRange(4,1,1,maxCols).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address('+maxRows+',column(),4))),"")');
 }

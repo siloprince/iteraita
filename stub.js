@@ -27,3 +27,7 @@ function reset() {
   var spread = SpreadsheetApp.getActive();
   return iteraita.reset(spread);
 }
+function refresh() {
+  var spread = SpreadsheetApp.getActive();
+  return iteraita.refresh(spread);
+}
