@@ -67,7 +67,6 @@ function onEdit(ev) {
     var frozenRows = sheet.getFrozenRows();
     var valRow = range.getRow() + 1;
     var width = range.getWidth();
-    Logger.log('range:'+valRow+' '+width);
     var formulas = sheet.getRange(valRow, 1, 1, width).getFormulas()[0];
     for (var fi = 0; fi < formulas.length; fi++) {
       var raw = formulas[fi];
@@ -85,7 +84,6 @@ function onEdit(ev) {
           if (pi === parts.length - 1) {
             continue;
           }
-          Logger.log(parts[pi]);
           // mod(1103515245 * iferror(index(擬似乱数,N("__")+row()-1
           if (/^([\s\S]*)iferror\(index\(([^;,{&\s\+\-\*\(]+),N\("__"\)\+row\(\)\-([0-9]+)$/.test(parts[pi])) {
             var rest = RegExp.$1;
@@ -208,9 +206,16 @@ function onEdit(ev) {
       if (!input) {
         if (f.length === 0) {
           sheet.getRange(row + 1, wi + 1, valHeight, 1).setFormula(f);
-          sheet.getRange(4,wi+1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(108,column(),4))),"")');
+          sheet.getRange(4,wi+1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address('+maxRows+',column(),4))),"")');
 
         } else {
+          // TODO: head/tail option with specifi line
+          if (f.indexOf('head')>-1) {
+            f = f.replace(/head\s*\(([^\)]+)\)/g,'offset($1,'+(frozenRows)+',0,1,1)');
+          }          
+          if (f.indexOf('tail')>-1) {
+            f = f.replace(/tail\s*\(([^\)]+)\)/g,'offset($1,'+(maxRows-1)+',0,1,1)');
+          }
           var _row = dollerRow;
           var _col = wi + 1;
           var _height = dollerHeight;
@@ -493,5 +498,5 @@ function reset(spread) {
     }
     sheet.setRowHeight(ri+1,height);
   }
-  sheet.getRange(4,1,1,cols).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(108,column(),4))),"")');
+  sheet.getRange(4,1,1,cols).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address('+maxRows+',column(),4))),"")');
 }
