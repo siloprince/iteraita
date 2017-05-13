@@ -234,7 +234,10 @@ function onEdit(ev) {
               sheet.getRange(5,_col,dollerRow-5,1).setValues(corrects);
             }
           } else {
-            sheet.getRange(row + 3, _col, frozenRows+1-(row+3), _width).setFormula('iferror('+f+',"")');
+            if (!(/if\s*\(/.test(f))) {
+              f ='iferror('+f+',"")';
+            }
+            sheet.getRange(row + 3, _col, frozenRows+1-(row+3), _width).setFormula(f);
           }
           if (f.indexOf('__@') > -1) {
             sheet.getRange(_row, _col, _height, _width).setFormula('');
