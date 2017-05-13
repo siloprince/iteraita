@@ -175,7 +175,7 @@ function onEdit(ev) {
     var dollerRow = frozenRows + 1;
     var row = range.getRow();
     var valRow = row + 2;
-    var valHeight = maxRows - valRow; // row
+    var valHeight = maxRows -row;
     var width = range.getWidth();
     var now = new Date();
     var year = now.getFullYear();
@@ -208,23 +208,21 @@ function onEdit(ev) {
       if (!input) {
         if (f.length === 0) {
           sheet.getRange(row + 1, wi + 1, valHeight, 1).setFormula(f);
+          sheet.getRange(4,wi+1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(108,column(),4))),"")');
+
         } else {
-          var _row = row + 3;
+          var _row = dollerRow;
           var _col = wi + 1;
-          var _height = valHeight;
+          var _height = dollerHeight;
           var _width = 1;
           // set to protocode
           sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
           if (f.indexOf('N("__formula__")') > -1) {
-            _row = dollerRow;
-            _col = wi + 1;
-            _height = dollerHeight;
             // remove errors on initals
             var errors = sheet.getRange(5,_col,dollerRow-5,1).getValues();
             var corrects = [];
             var hasError=false;
             for (var ei=0;ei<errors.length;ei++) {
-            Logger.log(errors[ei][0]);
               if (/^#.*!$/.test(errors[ei][0])) {
                 corrects.push(['']);
                 hasError=true;
@@ -235,11 +233,10 @@ function onEdit(ev) {
             if (hasError) {
               sheet.getRange(5,_col,dollerRow-5,1).setValues(corrects);
             }
+          } else {
+            sheet.getRange(row + 3, _col, frozenRows+1-(row+3), _width).setFormula('iferror('+f+',"")');
           }
           if (f.indexOf('__@') > -1) {
-            _row = dollerRow;
-            _col = wi + 1;
-            _height = dollerHeight;
             sheet.getRange(_row, _col, _height, _width).setFormula('');
             var therange = sheet.getRange(_row, _col);
             therange.setFormula(f);
@@ -451,6 +448,8 @@ function onOpen(spread, ui, sidebar) {
   return true;
 }
 function reset(spread) {
+  var sheet = spread.getActiveSheet();
+  var sheetName = sheet.getName();
   var namedRanges = spread.getNamedRanges();
   for (var ni=0;ni<namedRanges.length;ni++) {
     if (namedRanges[ni].getName().indexOf('__')!==0) {
@@ -459,7 +458,6 @@ function reset(spread) {
   }
   var rows = 100+8;
   var cols = 26;
-  var sheet = spread.getRange('__itemNameList__').getSheet();
   sheet.clearContents();
   var maxRows = sheet.getMaxRows();
   if (maxRows < rows ) {
@@ -476,6 +474,8 @@ function reset(spread) {
   for (var ci=0;ci<cols;ci++) {
     sheet.setColumnWidth(ci+1,120);
   }
+  var formulaRange = spread.getRange("'"+sheetName+"'!__formulaList__");
+  formulaRange.setWrap(true);
   // TODO
   for (var ri=0;ri<rows;ri++) {
     var height=21;
