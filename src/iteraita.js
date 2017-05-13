@@ -161,7 +161,7 @@ function onEdit(ev) {
     var dollerRow = frozenRows + 1;
     var row = range.getRow();
     var valRow = row + 2;
-    var valHeight = maxRows - row;
+    var valHeight = maxRows - valRow;
     var width = range.getWidth();
     var now = new Date();
     var year = now.getFullYear();
@@ -199,11 +199,27 @@ function onEdit(ev) {
           var _col = wi + 1;
           var _height = valHeight;
           var _width = 1;
+          // set to protocode
           sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
           if (f.indexOf('N("__formula__")') > -1) {
             _row = dollerRow;
             _col = wi + 1;
             _height = dollerHeight;
+            // remove errors on initals
+            var errors = sheet.getRange(5,_col,dollerRow-5,1).getValues();
+            var corrects = [];
+            var hasError=false;
+            for (var ei=0;ei<errors.length;ei++) {
+              if (/^#.*!$/.test(errors[ei][0])) {
+                corrects.push(['']);
+                hasError=true;
+              } else {
+                corrects.push([errors[ei][0]])
+              }
+            }
+            if (hasError) {
+              sheet.getRange(5,_col,dollerRow-5,1).setValues(corrects);
+            }
           }
           if (f.indexOf('__@') > -1) {
             _row = dollerRow;
@@ -407,7 +423,7 @@ function clear(spread, all) {
 }
 function onOpen(spread, ui, sidebar) {
   if (!sidebar) {
-    ui.createMenu('Iteraita').addItem('サイドバーを開く', 'openSidebar').addToUi();
+    ui.createMenu('Iteraita').addItem('サイドバーを開く', 'openSidebar').addItem('リセット', 'reset').addToUi();
     return;
   }
   var html = HtmlService.createHtmlOutputFromFile('Sidebar')
@@ -415,4 +431,44 @@ function onOpen(spread, ui, sidebar) {
     .setWidth(300);
   ui.showSidebar(html);
   return true;
+}
+function reset(spread) {
+  var namedRanges = spread.getNamedRanges();
+  for (var ni=0;ni<namedRanges.length;ni++) {
+    if (namedRanges[ni].getName().indexOf('__')!==0) {
+      namedRanges[ni].remove();
+    }
+  }
+  var rows = 100+8;
+  var cols = 26;
+  var sheet = spread.getRange('__itemNameList__').getSheet();
+  sheet.clearContents();
+  var maxRows = sheet.getMaxRows();
+  if (maxRows < rows ) {
+    sheet.insertRows(maxRows,rows-maxRows);
+  } else if (maxRows > rows) {
+    sheet.deleteRows(rows+1,maxRows-rows);
+  }
+   var maxCols = sheet.getMaxColumns();
+  if (maxCols < cols ) {
+    sheet.insertColumns(maxCols,cols-maxCols);
+  } else if (maxCols > cols) {
+    sheet.deleteColumns(cols+1,maxCols-cols);
+  }
+  for (var ci=0;ci<cols;ci++) {
+    sheet.setColumnWidth(ci+1,120);
+  }
+  // TODO
+  for (var ri=0;ri<rows;ri++) {
+    var height=21;
+    if (ri===1) {
+      height = 70;
+    } else if (ri===2) {
+      height = 2;
+    } else if (ri===3) {
+      height = 70;
+    }
+    sheet.setRowHeight(ri+1,height);
+  }
+  sheet.getRange(4,1,1,cols).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(108,column(),4))),"")');
 }
