@@ -465,7 +465,7 @@ function reset(spread) {
     }
   }
   var rows = 100+8;
-  var cols = 26;
+  var cols = 32;
   sheet.clearContents();
   var maxRows = sheet.getMaxRows();
   if (maxRows < rows ) {
