@@ -4,10 +4,11 @@ function info() {
 function onEdit(ev) {
   var targetRange = ev.range;
   var sheet = targetRange.getSheet();
+  var sheetName = sheet.getName();
   var spread = sheet.getParent();
-  var itemNameListRange = spread.getRangeByName('__itemNameList__');
+  var itemNameListRange = spread.getRangeByName("'"+sheetName+"'!__itemNameList__");
   var itemNameListRow = itemNameListRange.getRow();
-  var formulaListRange = spread.getRangeByName('__formulaList__');
+  var formulaListRange = spread.getRangeByName("'"+sheetName+"'!__formulaList__");
   var formulaListRow = formulaListRange.getRow();
 
   var targetRow = targetRange.getRow();
@@ -336,7 +337,9 @@ function onEdit(ev) {
 }
 
 function atprocess(spread, byhand) {
-  var range = spread.getRangeByName('__formulaList__');
+  var sheet = spread.getActiveSheet();
+  var sheetName = sheet.getName();
+  var range = spread.getRangeByName("'"+sheetName+"'!__formulaList__");
   var frow = range.getRow() + 1;
   var formulaList = range.getValues()[0];
   var sheet = range.getSheet();
@@ -416,7 +419,8 @@ function setTimestamp(range, frow) {
 function clear(spread, all) {
   var range = spread.getActiveRange();
   var sheet = range.getSheet();
-  var formulaRange = spread.getRangeByName('__formulaList__');
+  var sheetName = sheet.getName();
+  var formulaRange = spread.getRangeByName("'"+sheetName+"'!__formulaList__");
   var frozenRows = sheet.getFrozenRows();
   var maxRows = sheet.getMaxRows();
   var values;
