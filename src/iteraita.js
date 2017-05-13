@@ -478,6 +478,8 @@ function reset(spread) {
     sheet.setColumnWidth(ci+1,120);
   }
   var formulaRange = spread.getRange("'"+sheetName+"'!__formulaList__");
+  formulaRange.setVerticalAlignment('top');
+  formulaRange.setHorizontalAlignment('right');
   formulaRange.setWrap(true);
   // TODO
   for (var ri=0;ri<rows;ri++) {
