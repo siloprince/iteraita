@@ -23,3 +23,7 @@ function openSidebar() {
   var ui = SpreadsheetApp.getUi();
   return iteraita.onOpen(spread,ui,true);
 }
+function reset() {
+  var spread = SpreadsheetApp.getActive();
+  return iteraita.reset(spread);
+}

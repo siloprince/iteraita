@@ -12,10 +12,13 @@ function onEdit(ev) {
 
   var targetRow = targetRange.getRow();
   var targetHeight = targetRange.getHeight();
+  
+  var namedRanges = spread.getNamedRanges();
 
   if (targetRow <= itemNameListRow && itemNameListRow <= targetRow + targetHeight - 1) {
     var rawItemNameList = itemNameListRange.getValues()[0];
     var itemNameList = [];
+    var nameDupHash = {};
     for (var ri = 0; ri < rawItemNameList.length; ri++) {
       var conved = convertItemName(rawItemNameList[ri].toString());
       if (itemNameList.indexOf(conved) === -1) {
@@ -23,12 +26,21 @@ function onEdit(ev) {
       } else if (conved.length === 0) {
         itemNameList.push(conved);
       } else {
-        // TODO: rename to avoid conflict
-        throw ('duplicated');
+        if (!(conved in nameDupHash)) {
+          nameDupHash[conved]=2;
+        }
+        for (var rj=0;rj<rawItemNameList.length;rj++) {
+          var indexed = conved+'_'+nameDupHash[conved];
+          if (itemNameList.indexOf(indexed)===-1) {
+            itemNameList.push(indexed);
+            break;
+          }
+          nameDupHash[conved]++;
+        }
       }
     }
     // update entire names
-    updateRangeNames(itemNameList, itemNameListRange);
+    updateRangeNames(itemNameList, itemNameListRange,namedRanges);
     recoverFromFormulas(formulaListRange);
 
   }
@@ -54,6 +66,7 @@ function onEdit(ev) {
     var frozenRows = sheet.getFrozenRows();
     var valRow = range.getRow() + 1;
     var width = range.getWidth();
+    Logger.log('range:'+valRow+' '+width);
     var formulas = sheet.getRange(valRow, 1, 1, width).getFormulas()[0];
     for (var fi = 0; fi < formulas.length; fi++) {
       var raw = formulas[fi];
@@ -161,7 +174,7 @@ function onEdit(ev) {
     var dollerRow = frozenRows + 1;
     var row = range.getRow();
     var valRow = row + 2;
-    var valHeight = maxRows - valRow;
+    var valHeight = maxRows - valRow; // row
     var width = range.getWidth();
     var now = new Date();
     var year = now.getFullYear();
@@ -210,6 +223,7 @@ function onEdit(ev) {
             var corrects = [];
             var hasError=false;
             for (var ei=0;ei<errors.length;ei++) {
+            Logger.log(errors[ei][0]);
               if (/^#.*!$/.test(errors[ei][0])) {
                 corrects.push(['']);
                 hasError=true;
@@ -240,14 +254,13 @@ function onEdit(ev) {
     }
   }
 
-  function updateRangeNames(itemNameList, itemRange) {
+  function updateRangeNames(itemNameList, itemRange, namedRanges) {
     var sheet = itemRange.getSheet();
     var spread = sheet.getParent();
     var valRow = 1;
     var maxRows = sheet.getMaxRows();
     var valHeight = maxRows;
     var maxCols = sheet.getMaxColumns();
-    var namedRanges = spread.getNamedRanges();
 
     var maxHeightHash = {};
     for (var ni = 0; ni < namedRanges.length; ni++) {
@@ -311,10 +324,11 @@ function onEdit(ev) {
       str = str.replace(/８/g, '8');
       str = str.replace(/９/g, '9');
     }
-    if (/^[0-9]/.test(str)) {
-      str = '＿' + str;
-    }
-    if (/[_\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/.test(str)) {
+    if (/^[a-zA-Z]$/.test(str)) {
+      str = '英' + str.toUpperCase();
+    } else if (/^[0-9]/.test(str)) {
+      str = '数' + str;
+    } else if (/[_\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/.test(str)) {
       str = str.replace(/[\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/g, '＿');
     }
     return str;
