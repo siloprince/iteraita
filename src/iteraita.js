@@ -310,11 +310,11 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           // TODO: head/tail option with specifi line
           if (f.indexOf('head') > -1) {
             var rep = 'iferror(index($1,$2+N("__head__")+' + (frozenRows + 1) + '+N("__formula__")),"")';
-            f = f.replace(/head\s*\(([^\),]+),*([0-9--]*)\)/g, rep);
+            f = f.replace(/head\s*\(([^\),]+),*((-|\+)*[0-9]*)\)/g, rep);
           }
           if (f.indexOf('tail') > -1) {
             var rep = 'iferror(index($1,$2+N("__tail__")+' + (maxRows) + '+N("__formula__")),"")';
-            f = f.replace(/tail\s*\(([^\),]+),*([0-9--]*)\)/g, rep);
+            f = f.replace(/tail\s*\(([^\),]+),*((-|\+)*[0-9]*)\)/g, rep);
           }
           if (f.indexOf('pack') > -1) {
             var target = 'offset($1,' + frozenRows + '+N("__pack__"),0,' + (maxRows - frozenRows) + ',1)';
