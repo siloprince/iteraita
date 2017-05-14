@@ -10,15 +10,25 @@ function onEdit(ev) {
   var targetHeight = targetRange.getHeight();
   var targetColumn = targetRange.getColumn();
   var targetWidth = targetRange.getWidth();
-  processNameRange(spread, sheet, targetRow, targetHeight);
-  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth);
+  var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
+  var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
+  processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRange,formulaListRange);
+  processEmptyFormula(spread,sheet,ev,targetRow,formulaListRange);
+  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth,itemNameListRange,formulaListRange);
   return true;
 }
-function processNameRange(spread, sheet, targetRow, targetHeight) {
-  var sheetName = sheet.getName();
-  var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
+function processEmptyFormula(spread,sheet,ev,targetRow,formulaListRange) {
+  if (ev.value && ev.oldValue) {
+    if (ev.oldValue.toString().length>0 && ev.value.toString().length===0) {
+      if (targetRow===formulaListRange.getRow()) {
+        var maxRows = sheet.getMaxRows();
+        sheet.getRange(targetRow,1,maxRows-targetRow+1,1).setValue('');
+      }
+    }
+  }
+}
+function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRange,formulaListRange) {
   var itemNameListRow = itemNameListRange.getRow();
-  var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
   var namedRanges = spread.getNamedRanges();
   if (targetRow <= itemNameListRow && itemNameListRow <= targetRow + targetHeight - 1) {
     var rawItemNameList = itemNameListRange.getValues()[0];
@@ -200,11 +210,8 @@ function processNameRange(spread, sheet, targetRow, targetHeight) {
   }
 }
 
-function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth) {
-  var sheetName = sheet.getName();
-  var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
+function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth,itemNameListRange,formulaListRange) {
   var itemNameList = itemNameListRange.getValues()[0];
-  var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
   var formulaListRow = formulaListRange.getRow();
   if (targetRow <= formulaListRow && formulaListRow <= targetRow + targetHeight - 1) {
     var rawFormulaList = formulaListRange.getValues()[0];
@@ -316,7 +323,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       }
       if (!input) {
         if (f.length === 0) {
-          sheet.getRange(row + 1, wi + 1, valHeight, 1).setFormula(f);
+          sheet.getRange(row + 1, wi + 1, 1, 1).setFormula(f);
           sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
 
         } else {   
@@ -562,6 +569,8 @@ function refresh(spread) {
   var targetHeight = formulaRange.getHeight();
   var targetColumn = formulaRange.getColumn();
   var targetWidth = formulaRange.getWidth();
-  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth);
+  var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
+  var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
+  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth,itemNameListRange,formulaListRange);
   sheet.getRange(4, 1, 1, maxCols).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
 }
