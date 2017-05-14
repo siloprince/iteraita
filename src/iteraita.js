@@ -334,7 +334,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           var _width = 1;
           // set to protocode
           sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
-          if (f.indexOf('N("__formula__")') > -1) {
+          if (f.indexOf('N("__prev') > -1) {
             // remove errors on initals
             var errors = sheet.getRange(5, _col, dollerRow - 5, 1).getValues();
             var corrects = [];
