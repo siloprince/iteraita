@@ -199,7 +199,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     var valRow = frozenRows + 1;
     var formulaList = [];
     for (var ri = 0; ri < rawFormulaList.length; ri++) {
-      var conved = convertFormula(rawFormulaList[ri], valRow);
+      var conved = convertFormula(rawFormulaList[ri].toString().trim(), valRow);
       formulaList.push(conved);
     }
     var startw = targetColumn;
@@ -209,7 +209,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
   return;
 
   function convertFormula(str, valRow) {
-    if (str.toString().trim().length === 0) {
+    if (str.length === 0) {
       return '';
     } else {
       var timeout = 0;
