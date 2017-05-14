@@ -90,6 +90,14 @@ function processNameRange(spread, sheet, targetRow, targetHeight) {
                 darray.push('\'');
               }
               parts[pi] = rest + item + darray.join('');
+            } else if (func.indexOf('head') === 0 || func.indexOf('tail') === 0) {
+              parts[pi] = rest + func + '(' + item + ')';
+              if (num!=='') {
+                num = parseInt(num, 10);
+                if (num!==0) {
+                  parts[pi] = rest + func + '(' + item + ','+num+')';
+                }
+              }
             } else {
               parts[pi] = rest + func + '(' + item + ')';
             }
@@ -191,6 +199,8 @@ function processNameRange(spread, sheet, targetRow, targetHeight) {
 
 function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth) {
   var sheetName = sheet.getName();
+  var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
+  var itemNameList = itemNameListRange.getValues()[0];
   var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
   var formulaListRow = formulaListRange.getRow();
   if (targetRow <= formulaListRow && formulaListRow <= targetRow + targetHeight - 1) {
@@ -204,7 +214,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     }
     var startw = targetColumn;
     var endw = startw + targetWidth - 1;
-    updateFormulas(formulaList, formulaListRange, startw, endw);
+    updateFormulas(formulaList, formulaListRange, startw, endw,itemNameList);
   }
   return;
 
@@ -262,7 +272,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       }
     }
   }
-  function updateFormulas(formulaList, range, startw, endw) {
+  function updateFormulas(formulaList, range, startw, endw,itemNameList) {
     var sheet = range.getSheet();
     var frozenRows = sheet.getFrozenRows();
     var maxRows = sheet.getMaxRows();
@@ -285,6 +295,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     for (var wi = startw - 1; wi < endw; wi++) {
       var input = false;
       var f = formulaList[wi].toString().trim();
+      var itemName = itemNameList[wi].toString().trim();
       if (f.length === 0) {
         var ff = sheet.getRange(row + 1, wi + 1, valHeight, 1).getFormulas();
         var lastffv = ff[dollerRow].toString().trim();
@@ -305,28 +316,32 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           sheet.getRange(row + 1, wi + 1, valHeight, 1).setFormula(f);
           sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
 
-        } else {
+        } else {   
           // +N("__formula__")),"")
           // TODO: head/tail option with specifi line
           if (f.indexOf('head') > -1) {
-            var rep = 'iferror(index($1,$2+N("__head__")+' + (frozenRows + 1) + '+N("__formula__")),"")';
-            f = f.replace(/head\s*\(([^\),]+),*((-|\+)*[0-9]*)\)/g, rep);
+            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\)/g, rep);
+            var headname = 'N("__head__")+N("'+itemName+'")';
+            if (f.indexOf(headname) > -1){
+              f = f.replace(headname,'N("__head__")+N("__prev__")');
+            }
           }
           if (f.indexOf('tail') > -1) {
             var rep = 'iferror(index($1,$2+N("__tail__")+' + (maxRows) + '+N("__formula__")),"")';
-            f = f.replace(/tail\s*\(([^\),]+),*((-|\+)*[0-9]*)\)/g, rep);
+            f = f.replace(/tail\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\)/g, rep);
           }
           if (f.indexOf('pack') > -1) {
             var target = 'offset($1,' + frozenRows + '+N("__pack__"),0,' + (maxRows - frozenRows) + ',1)';
             var rep = 'iferror(index(filter(' + target + ',' + target + '<>""),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
-            f = f.replace(/pack\s*\(([^\)]+)\)/g, rep);
+            f = f.replace(/pack\s*\(\s*([^\s\)]+)\s*\)/g, rep);
           }
           if (f.indexOf('subseq') > -1) {
             var target = 'offset($1,' + frozenRows + '+N("__subseq__"),0,' + (maxRows - frozenRows) + ',1)';
             var start = 'match(index(filter(' + target + ',' + target + '<>""),1,1),' + target + ',0)';
             var end = 'match("_",arrayformula(if(offset(' + target + ',' + start + '-1,0)="","_",offset(' + target + ',' + start + '-1,0))),0)';
             var rep = 'iferror(index(offset(' + target + ',' + start + '-1,0,' + end + ',1),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
-            f = f.replace(/subseq\s*\(([^\)]+)\)/g, rep);
+            f = f.replace(/subseq\s*\(\s*([^\s\)]+)\s*\)/g, rep);
           }
           var _row = dollerRow;
           var _col = wi + 1;
@@ -336,7 +351,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
           if (f.indexOf('N("__prev__")') > -1) {
             // remove errors on initals
-            var errors = sheet.getRange(5, _col, dollerRow - 5, 1).getValues();
+            var errors = sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).getValues();
             var corrects = [];
             var hasError = false;
             for (var ei = 0; ei < errors.length; ei++) {
@@ -348,7 +363,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               }
             }
             if (hasError) {
-              sheet.getRange(5, _col, dollerRow - 5, 1).setValues(corrects);
+              sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).setValues(corrects);
             }
           } else {
             var ff = 'iferror(if(' + f + '="","",'+f+'+0),"")';
