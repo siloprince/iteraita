@@ -90,6 +90,9 @@ function processNameRange(spread, sheet, targetRow, targetHeight) {
                 darray.push('\'');
               }
               parts[pi] = rest + item + darray.join('');
+            } else if (func.indexOf('argv') === 0) {
+              num = -parseInt(num, 10);
+              parts[pi] = rest + func + '(' + num + ')';
             } else if (func.indexOf('head') === 0 || func.indexOf('tail') === 0) {
               parts[pi] = rest + func + '(' + item + ')';
               if (num!=='') {
@@ -318,10 +321,13 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
 
         } else {   
           // +N("__formula__")),"")
-          // TODO: head/tail option with specifi line
+          if (f.indexOf('argv') > -1) {
+            var rep = 'iferror(index('+itemName+',-$1+N("__argv__")+N("__prev__")+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            f = f.replace(/argv\s*\(\s*([0-9]+)\s*\)/g, rep);
+          }
           if (f.indexOf('head') > -1) {
             var rep = 'iferror(index($1,$2+N("__head__")+N("$1")+' + (frozenRows + 1) + '+N("__formula__")),"")';
-            f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\)/g, rep);
+            f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
             var headname = 'N("__head__")+N("'+itemName+'")';
             if (f.indexOf(headname) > -1){
               f = f.replace(headname,'N("__head__")+N("__prev__")');
@@ -329,7 +335,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           }
           if (f.indexOf('tail') > -1) {
             var rep = 'iferror(index($1,$2+N("__tail__")+' + (maxRows) + '+N("__formula__")),"")';
-            f = f.replace(/tail\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\)/g, rep);
+            f = f.replace(/tail\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
           }
           if (f.indexOf('pack') > -1) {
             var target = 'offset($1,' + frozenRows + '+N("__pack__"),0,' + (maxRows - frozenRows) + ',1)';
