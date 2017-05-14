@@ -215,7 +215,18 @@ function onEdit(ev) {
           }          
           if (f.indexOf('tail')>-1) {
             f = f.replace(/tail\s*\(([^\)]+)\)/g,'offset($1,'+(maxRows-1)+',0,1,1)');
-          }       
+          }     
+          if (f.indexOf('pack')>-1) {
+            var target = 'offset($1,'+frozenRows+',0,'+(maxRows-frozenRows)+',1)';
+            f = f.replace(/pack\s*\(([^\)]+)\)/g,'iferror(index(filter('+target+','+target+'<>""),row()-'+(frozenRows)+'),"")');
+          }
+          if (f.indexOf('subseq')>-1) {
+            var target = 'offset($1,'+frozenRows+',0,'+(maxRows-frozenRows)+',1)';
+            var start = 'match(index(filter('+target+','+target+'<>""),1,1),'+target+',0)';
+            var end = 'match("_",arrayformula(if(offset('+target+','+start+'-1,0)="","_",offset('+target+','+start+'-1,0))),0)';
+            var rep = 'iferror(index(offset('+target+','+start+'-1,0,'+end+',1),if(row()-'+(frozenRows)+'>0,row()-'+(frozenRows)+',-1)),"")';
+            f = f.replace(/subseq\s*\(([^\)]+)\)/g,rep);
+          }
           var _row = dollerRow;
           var _col = wi + 1;
           var _height = dollerHeight;
