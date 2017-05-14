@@ -215,7 +215,7 @@ function onEdit(ev) {
           }          
           if (f.indexOf('tail')>-1) {
             f = f.replace(/tail\s*\(([^\)]+)\)/g,'offset($1,'+(maxRows-1)+',0,1,1)');
-          }
+          }       
           var _row = dollerRow;
           var _col = wi + 1;
           var _height = dollerHeight;
@@ -239,10 +239,11 @@ function onEdit(ev) {
               sheet.getRange(5,_col,dollerRow-5,1).setValues(corrects);
             }
           } else {
+            var ff=f;
             if (!(/if\s*\(/.test(f))) {
-              f ='iferror('+f+',"")';
+              ff ='iferror(if('+ff+'="","",f),"")';
             }
-            sheet.getRange(row + 3, _col, frozenRows+1-(row+3), _width).setFormula(f);
+            sheet.getRange(row + 3, _col, frozenRows+1-(row+3), _width).setFormula(ff);
           }
           if (f.indexOf('__@') > -1) {
             sheet.getRange(_row, _col, _height, _width).setFormula('');
