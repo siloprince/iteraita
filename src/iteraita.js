@@ -143,6 +143,25 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
         var ff = parts.join('');
         formulas[fi] = ff;
       }
+      // =iferror(if(1,0,1/0)+N("__if__")+if( 自然数>10,N("__then__")+自然数  ,1/0)+N("__if__")+if(1,0,0/1),"")
+      var ifsep = ',1/0)+N("__if__")+if(';
+      if (formulas[fi].indexOf(ifsep) > -1) {
+        var farray = [];
+        var elsep = ',N("__then__")+'; 
+        var parts = formulas[fi].split(ifsep);
+        for (var pi = 0; pi < parts.length; pi++) {
+          if (pi === 0 || pi===parts.length-1) {
+            continue;
+          }
+          var condval = parts[pi].split(elsep);
+          if (parts.length===3) {
+            farray.push(condval[1].trim()+' | '+condval[0].trim()+'');
+          } else {
+            farray.push(condval[1].trim()+' | { '+condval[0].trim()+' }');
+          }
+        }
+        formulas[fi] = farray.join('\n');
+      }
       // =iferror(T(N(to_text(if(isnumber(222),222,T(N("__@2__"))&222)))),"")
       if (formulas[fi].indexOf('T(N("__@') > -1) {
         if (/\T\(N\("__@(@|[0-9\.]+)__"\)\)&([\s\S]*)\)$/.test(formulas[fi])) {
@@ -384,6 +403,27 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             var end = 'match("_",arrayformula(if(offset(' + target + ',' + start + '-1,0)="","_",offset(' + target + ',' + start + '-1,0))),0)';
             var rep = 'iferror(index(offset(' + target + ',' + start + '-1,0,' + end + ',1),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
             f = f.replace(/subseq\s*\(\s*([^\s\)]+)\s*\)/g, rep);
+          }
+          if (f.indexOf('|') > -1) {
+            var splitArray = f.split('|');
+            var valueArray = [];
+            var condArray = [];
+            valueArray.push(splitArray.shift());
+            for (var si=0;si<splitArray.length;si++) {
+              var detailArray = splitArray[si].split('}');
+              if (detailArray.length===1) {
+                condArray.push(detailArray[0]);
+              } else {
+                condArray.push(detailArray[0].split('{')[0]);
+                valueArray.push(detailArray[1]);
+              }
+            }
+            var farray = ['iferror(if(1,0,1/0)'];
+            for (var ci=0;ci<condArray.length;ci++) {
+              farray.push('+N("__if__")+if('+condArray[ci]+',N("__then__")+'+valueArray[ci]+' ,1/0)');
+            }
+            farray.push('+N("__if__")+if(1,0,0/1),"")');
+            f = farray.join('');
           }
           var _row = dollerRow;
           var _col = wi + 1;
