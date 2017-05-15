@@ -13,17 +13,22 @@ function onEdit(ev) {
   var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
   var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
   processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRange,formulaListRange);
-  processEmptyFormula(spread,sheet,ev,targetRow,formulaListRange);
+  processSingleEmptyFormula(spread,sheet,ev,targetRow,targetColumn,formulaListRange);
   processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth,itemNameListRange,formulaListRange);
   return true;
 }
-function processEmptyFormula(spread,sheet,ev,targetRow,formulaListRange) {
-  if (ev.value && ev.oldValue) {
-    if (ev.oldValue.toString().length>0 && ev.value.toString().length===0) {
-      if (targetRow===formulaListRange.getRow()) {
-        var maxRows = sheet.getMaxRows();
-        sheet.getRange(targetRow,1,maxRows-targetRow+1,1).setValue('');
-      }
+function getObjectType ( object ) {
+  return Object.prototype.toString.call(object).replace(/\[object (\w+)\]$/,'$1');
+}
+function processSingleEmptyFormula(spread,sheet,ev,targetRow,targetColumn,formulaListRange) {
+// if onEdit for multiple cell ev.value = {}, ev.oldValue = undefined
+// if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
+//                           ev.value = "x", ev.oldValue = undefined if chagned from "" to "x"
+//Logger.log(JSON.stringify(ev.value)+':'+JSON.stringify(ev.oldValue));
+  if (getObjectType(ev.value)==='Object' && getObjectType(ev.oldValue)==='String') {
+    if (targetRow===formulaListRange.getRow()) {
+       var maxRows = sheet.getMaxRows();
+       sheet.getRange(targetRow+1,targetColumn,maxRows-targetRow,1).setValue('');
     }
   }
 }
