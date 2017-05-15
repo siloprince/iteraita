@@ -109,11 +109,12 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
             continue;
           }
           // mod(1103515245 * iferror(index(擬似乱数,N("__n__")+row()-1
-          if (/^([\s\S]*)iferror\(index\((|filter\(offset\(|offset\(offset\()([^;,{&\s\+\-\*\(]+),([0-9--]*)\+N\("__([^_]+)__"\)/.test(parts[pi])) {
+          if (/^([\s\S]*)iferror\(index\((|filter\(offset\(|offset\(offset\()([^;,{&\s\+\-\*\(]+),([\.0-9--]*)\+N\("__([^_]+)__"\)([\s\S]*)$/.test(parts[pi])) {
             var rest = RegExp.$1;
             var item = RegExp.$3;
             var num = RegExp.$4;
             var func = RegExp.$5;
+            var end = RegExp.$6;
             if (func.indexOf('prev') === 0) {
               var dcount = -parseInt(num, 10);
               var darray = [];
@@ -130,6 +131,13 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
                 num = parseInt(num, 10);
                 if (func.indexOf('last') === 0) {
                   num = -num;
+                  if (end.indexOf('+1-if(0=0,1,0)')>-1) {
+                    num += 1;
+                  }
+                } else {
+                  if (end.indexOf('-1+if(0=0,1,0)')>-1) {
+                    num += 1;
+                  }
                 }
                 if (num!==1) {
                   parts[pi] = rest + func + '(' + item + ','+num+')';
@@ -143,21 +151,23 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
         var ff = parts.join('');
         formulas[fi] = ff;
       }
-      // =iferror(if(1,0,1/0)+N("__if__")+if( 自然数>10,N("__then__")+自然数  ,1/0)+N("__if__")+if(1,0,0/1),"")
-      var ifsep = ',1/0)+N("__if__")+if(';
+      // =iferror(if(1,0,1/0)+N("__if__")+if(and( 自然数>10,isnumber(自然数)),N("__then__")+自然数  ,1/0)+N("__if__")+if(and(1,1),0,0/1),"")
+      var ifsep = ',1/0)+N("__if__")+if(and(';
       if (formulas[fi].indexOf(ifsep) > -1) {
         var farray = [];
-        var elsep = ',N("__then__")+'; 
+        var elsep1 = ',isnumber(';
+        var elsep2 = '),N("__then__")+';
         var parts = formulas[fi].split(ifsep);
         for (var pi = 0; pi < parts.length; pi++) {
           if (pi === 0 || pi===parts.length-1) {
             continue;
           }
-          var condval = parts[pi].split(elsep);
+          var condval = parts[pi].split(elsep2);
+          var cond = condval[0].split(elsep1);
           if (parts.length===3) {
-            farray.push(condval[1].trim()+' | '+condval[0].trim()+'');
+            farray.push(condval[1].trim()+' | '+cond[0].trim()+'');
           } else {
-            farray.push(condval[1].trim()+' | { '+condval[0].trim()+' }');
+            farray.push(condval[1].trim()+' | { '+cond[0].trim()+' }');
           }
         }
         formulas[fi] = farray.join('\n');
@@ -379,7 +389,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             f = f.replace(/argv\s*\(\s*([0-9]+)\s*\)/g, rep);
           }
           if (f.indexOf('head') > -1) {
-            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+if($2.0=0,1,0)+' + (frozenRows + 1) + '+N("__formula__")),"")';
             f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
             if (itemName.length>0) {
               var headname = 'N("__head__")+N("'+itemName+'")';
@@ -389,7 +399,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             }
           }
           if (f.indexOf('last') > -1) {
-            var rep = 'iferror(index($1,-$3+N("__last__")+1+' + (maxRows) + '+N("__formula__")),"")';
+            var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if($3.0=0,1,0)+' + (maxRows) + '+N("__formula__")),"")';
             f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
           }
           if (f.indexOf('pack') > -1) {
@@ -420,9 +430,9 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             }
             var farray = ['iferror(if(1,0,1/0)'];
             for (var ci=0;ci<condArray.length;ci++) {
-              farray.push('+N("__if__")+if('+condArray[ci]+',N("__then__")+'+valueArray[ci]+' ,1/0)');
+              farray.push('+N("__if__")+if(and('+condArray[ci]+',isnumber('+valueArray[ci]+')),N("__then__")+'+valueArray[ci]+' ,1/0)');
             }
-            farray.push('+N("__if__")+if(1,0,0/1),"")');
+            farray.push('+N("__if__")+if(and(1,1),0,0/1),"")');
             f = farray.join('');
           }
           var _row = dollerRow;
@@ -592,7 +602,7 @@ function reset(spread) {
     }
   }
   var rows = 100 + 8;
-  var cols = 32;
+  var cols = 26;
   sheet.clearContents();
   var maxRows = sheet.getMaxRows();
   if (maxRows < rows) {
