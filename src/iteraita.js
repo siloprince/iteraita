@@ -108,11 +108,14 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
             } else if (func.indexOf('argv') === 0) {
               num = -parseInt(num, 10);
               parts[pi] = rest + func + '(' + num + ')';
-            } else if (func.indexOf('head') === 0 || func.indexOf('tail') === 0) {
+            } else if (func.indexOf('head') === 0 || func.indexOf('last') === 0) {
               parts[pi] = rest + func + '(' + item + ')';
               if (num!=='') {
                 num = parseInt(num, 10);
-                if (num!==0) {
+                if (func.indexOf('last') === 0) {
+                  num = -num;
+                }
+                if (num!==1) {
                   parts[pi] = rest + func + '(' + item + ','+num+')';
                 }
               }
@@ -334,20 +337,20 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         } else {   
           // +N("__formula__")),"")
           if (f.indexOf('argv') > -1) {
-            var rep = 'iferror(index('+itemName+',-$1+N("__argv__")+N("__prev__")+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            var rep = 'iferror(index('+itemName+',-$1+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
             f = f.replace(/argv\s*\(\s*([0-9]+)\s*\)/g, rep);
           }
           if (f.indexOf('head') > -1) {
-            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
             f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
             var headname = 'N("__head__")+N("'+itemName+'")';
             if (f.indexOf(headname) > -1){
               f = f.replace(headname,'N("__head__")+N("__prev__")');
             }
           }
-          if (f.indexOf('tail') > -1) {
-            var rep = 'iferror(index($1,$2+N("__tail__")+' + (maxRows) + '+N("__formula__")),"")';
-            f = f.replace(/tail\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
+          if (f.indexOf('last') > -1) {
+            var rep = 'iferror(index($1,-$3+N("__last__")+1+' + (maxRows) + '+N("__formula__")),"")';
+            f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
           }
           if (f.indexOf('pack') > -1) {
             var target = 'offset($1,' + frozenRows + '+N("__pack__"),0,' + (maxRows - frozenRows) + ',1)';
