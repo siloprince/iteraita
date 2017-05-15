@@ -46,8 +46,16 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
       } else if (conved.length === 0) {
         itemNameList.push(conved);
       } else {
-        if (!(conved in nameDupHash)) {
-          nameDupHash[conved] = 2;
+        if (conved.indexOf('_')<=0) { 
+          if (!(conved in nameDupHash)) {
+            nameDupHash[conved] = 2;
+          }
+        } else {
+          // TODO: multiple _\d_\d
+          conved = conved.replace(/_[0-9]+$/,'');
+          if (!(conved in nameDupHash)) {
+            nameDupHash[conved] = 2;            
+          }
         }
         for (var rj = 0; rj < rawItemNameList.length; rj++) {
           var indexed = conved + '_' + nameDupHash[conved];
