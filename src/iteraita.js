@@ -32,6 +32,14 @@ function processSingleEmptyFormula(spread,sheet,ev,targetRow,targetColumn,formul
     }
   }
 }
+function getColumnLabel (index) {
+  var mod = ((index-1)%26);
+  var modStr = String.fromCharCode("A".charCodeAt(0)+mod);
+  var quot = ((index-1-mod)/26);
+  var quotStr =  String.fromCharCode("A".charCodeAt(0)-1+quot);
+  if (quot==0) { quotStr = ""; }
+  return quotStr+modStr;
+}
 function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRange,formulaListRange) {
   var itemNameListRow = itemNameListRange.getRow();
   var namedRanges = spread.getNamedRanges();
@@ -345,15 +353,20 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         } else {   
           // +N("__formula__")),"")
           if (f.indexOf('argv') > -1) {
-            var rep = 'iferror(index('+itemName+',-$1+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            var collabel = getColumnLabel(wi+1);
+            var itemLabel = collabel+':'+collabel;
+          
+            var rep = 'iferror(index('+itemLabel+',-$1+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
             f = f.replace(/argv\s*\(\s*([0-9]+)\s*\)/g, rep);
           }
           if (f.indexOf('head') > -1) {
             var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
             f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
-            var headname = 'N("__head__")+N("'+itemName+'")';
-            if (f.indexOf(headname) > -1){
-              f = f.replace(headname,'N("__head__")+N("__prev__")');
+            if (itemName.length>0) {
+              var headname = 'N("__head__")+N("'+itemName+'")';
+              if (f.indexOf(headname) > -1){
+                f = f.replace(headname,'N("__head__")+N("__prev__")');
+              }
             }
           }
           if (f.indexOf('last') > -1) {
