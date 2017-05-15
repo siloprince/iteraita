@@ -408,7 +408,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).setValues(corrects);
             }
           } else {
-            var ff = 'iferror(if(' + f + '="","",'+f+'+0),"")';
+            var ff = 'iferror(if(' + f + '="","",+'+f+'),"")';
             sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), _width).setFormula(ff);
           }
           if (f.indexOf('__@') > -1) {
