@@ -131,11 +131,11 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
                 num = parseInt(num, 10);
                 if (func.indexOf('last') === 0) {
                   num = -num;
-                  if (end.indexOf('+1-if(0=0,1,0)')>-1) {
+                  if (end.indexOf('+1-if(""="",1,0)')>-1) {
                     num += 1;
                   }
                 } else {
-                  if (end.indexOf('-1+if(0=0,1,0)')>-1) {
+                  if (end.indexOf('-1+if(""="",1,0)')>-1) {
                     num += 1;
                   }
                 }
@@ -446,7 +446,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             f = f.replace(/argv\s*\(\s*([0-9]+)\s*\)/g, rep);
           }
           if (f.indexOf('head') > -1) {
-            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+if($2.0=0,1,0)+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+if("$2"="",1,0)+' + (frozenRows + 1) + '+N("__formula__")),"")';
             f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
             if (itemName.length>0) {
               var headname = 'N("__head__")+N("'+itemName+'")';
@@ -456,7 +456,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             }
           }
           if (f.indexOf('last') > -1) {
-            var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if($3.0=0,1,0)+' + (maxRows) + '+N("__formula__")),"")';
+            var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if("$3"="",1,0)+' + (maxRows) + '+N("__formula__")),"")';
             f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
           }
           if (f.indexOf('pack') > -1) {
