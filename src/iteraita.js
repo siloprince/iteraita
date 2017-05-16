@@ -124,7 +124,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
               parts[pi] = rest + item + darray.join('');
             } else if (func.indexOf('argv') === 0) {
               num = -parseInt(num, 10);
-              parts[pi] = rest + func + '(' + num + ')';
+              parts[pi] = rest + '$' + num + '';
             } else if (func.indexOf('head') === 0 || func.indexOf('last') === 0) {
               parts[pi] = rest + func + '(' + item + ')';
               if (num!=='') {
@@ -438,12 +438,15 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
 
         } else {   
           // +N("__formula__")),"")
-          if (f.indexOf('argv') > -1) {
+          if (f.indexOf('$') > -1) {
             var collabel = getColumnLabel(wi+1);
             var itemLabel = collabel+':'+collabel;
           
             var rep = 'iferror(index('+itemLabel+',-$1+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
-            f = f.replace(/argv\s*\(\s*([0-9]+)\s*\)/g, rep);
+            f = f.replace(/\$([0-9]+)/g, rep);
+            if (f.indexOf('${')>-1) {
+              f = f.replace(/\${([0-9]+)}/g, rep);
+            }
           }
           if (f.indexOf('head') > -1) {
             var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+if("$2"="",1,0)+' + (frozenRows + 1) + '+N("__formula__")),"")';
