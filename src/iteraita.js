@@ -49,6 +49,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
     var nameDupHash = {};
     for (var ri = 0; ri < rawItemNameList.length; ri++) {
       var conved = convertItemName(rawItemNameList[ri].toString());
+      Logger.log(conved);
       if (itemNameList.indexOf(conved) === -1) {
         itemNameList.push(conved);
       } else if (conved.length === 0) {
@@ -242,24 +243,79 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
   }
   function convertItemName(str) {
     // TODO: support more bad characters
-    if (/[０１２３４５６７８９]/) {
+    str = str.toUpperCase();
+    var head = str.charCodeAt(0);
+    if (str.length===1) {
+      // C and R is not available
+      if ('A'.charCodeAt(0) <= head && head <'Z'.charCodeAt(0)) {
+        str = '英' + str;
+        return str;
+      }
+    }
+    if (str.indexOf('０')>-1) {
       str = str.replace(/０/g, '0');
+    }
+    if (str.indexOf('１')>-1) {
       str = str.replace(/１/g, '1');
+    }
+    if (str.indexOf('２')>-1) {
       str = str.replace(/２/g, '2');
+    }
+    if (str.indexOf('３')>-1) {
       str = str.replace(/３/g, '3');
+    }
+    if (str.indexOf('４')>-1) {
       str = str.replace(/４/g, '4');
+    }
+    if (str.indexOf('５')>-1) {
       str = str.replace(/５/g, '5');
+    }
+    if (str.indexOf('６')>-1) {
       str = str.replace(/６/g, '6');
+    }
+    if (str.indexOf('７')>-1) {
       str = str.replace(/７/g, '7');
+    }
+    if (str.indexOf('８')>-1) {
       str = str.replace(/８/g, '8');
+    }
+    if (str.indexOf('９')>-1) {
       str = str.replace(/９/g, '9');
     }
-    if (/^[a-zA-Z]$/.test(str)) {
-      str = '英' + str.toUpperCase();
-    } else if (/^[0-9]/.test(str)) {
+    if (/[_\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/.test(str)) {
+        str = str.replace(/[\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/g, '＿');
+    }
+    head = str.charCodeAt(0);
+    var last = str.charCodeAt(str.length-1);
+    if ('A'.charCodeAt(0) <= head && head <'Z'.charCodeAt(0) && '0'.charCodeAt(0) <= last && last <'9'.charCodeAt(0) && str.indexOf('_')===-1) {
+      var sarray=[];
+      var numflag=0;
+      for (var si=0;si<str.length;si++) {
+        var sv = str.charCodeAt(si);
+        if ('A'.charCodeAt(0) <= sv && sv <'Z'.charCodeAt(0) ) {
+          if (numflag) {
+            numflag=0;
+            break;
+          }
+          sarray.push(str[si]);
+        } else if ('0'.charCodeAt(0) <= sv && sv <'9'.charCodeAt(0) ) {
+          if(numflag===0){
+            sarray.push('_');
+            numflag=1;
+          }
+          sarray.push(str[si]);
+        } else {
+          numflag=0;
+          break;
+        }
+      }
+      if (numflag) {
+        str = sarray.join('');
+      }
+    }
+    if ('0'.charCodeAt(0) <= head && head <'9'.charCodeAt(0)) {
       str = '数' + str;
-    } else if (/[_\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/.test(str)) {
-      str = str.replace(/[\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/g, '＿');
+      return str;
     }
     return str;
   }
