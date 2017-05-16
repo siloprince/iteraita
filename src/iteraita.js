@@ -49,7 +49,6 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
     var nameDupHash = {};
     for (var ri = 0; ri < rawItemNameList.length; ri++) {
       var conved = convertItemName(rawItemNameList[ri].toString());
-      Logger.log(conved);
       if (itemNameList.indexOf(conved) === -1) {
         itemNameList.push(conved);
       } else if (conved.length === 0) {
