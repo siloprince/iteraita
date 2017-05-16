@@ -1,2 +1,0 @@
-var a = 'aaa{bb}cc';
-console.log(a.split('{'));

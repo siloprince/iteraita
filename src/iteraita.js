@@ -151,12 +151,13 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
         var ff = parts.join('');
         formulas[fi] = ff;
       }
-      // =iferror(if(1,0,1/0)+N("__if__")+if(and( 自然数>10,isnumber(自然数)),N("__then__")+自然数  ,1/0)+N("__if__")+if(and(1,1),0,0/1),"")
-      var ifsep = ',1/0)+N("__if__")+if(and(';
+      // =iferror(iferror(N("__if__")+if(and( 自然数>10,isnumber(自然数)),N("__then__")+自然数  ,1/0)),N("__if__")+0/1),"")
+      var ifsep = 'N("__if__")+if(and(';
       if (formulas[fi].indexOf(ifsep) > -1) {
         var farray = [];
         var elsep1 = ',isnumber(';
         var elsep2 = '),N("__then__")+';
+        var tailsep = ',1/0)),';
         var parts = formulas[fi].split(ifsep);
         for (var pi = 0; pi < parts.length; pi++) {
           if (pi === 0 || pi===parts.length-1) {
@@ -164,10 +165,11 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
           }
           var condval = parts[pi].split(elsep2);
           var cond = condval[0].split(elsep1);
+          var val = condval[1].slice(0,-tailsep.length).trim();
           if (parts.length===3) {
-            farray.push(condval[1].trim()+' | '+cond[0].trim()+'');
+            farray.push(val+' | '+cond[0].trim()+'');
           } else {
-            farray.push(condval[1].trim()+' | { '+cond[0].trim()+' }');
+            farray.push(val+' | { '+cond[0].trim()+' }');
           }
         }
         formulas[fi] = farray.join('\n');
@@ -421,18 +423,18 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             valueArray.push(splitArray.shift());
             for (var si=0;si<splitArray.length;si++) {
               var detailArray = splitArray[si].split('}');
-              if (detailArray.length===1) {
-                condArray.push(detailArray[0]);
-              } else {
-                condArray.push(detailArray[0].split('{')[0]);
-                valueArray.push(detailArray[1]);
-              }
+              condArray.push(detailArray[0].slice(detailArray[0].indexOf('{')+1));
+              valueArray.push(detailArray[1]);
             }
-            var farray = ['iferror(if(1,0,1/0)'];
+            var farray = ['iferror('];
             for (var ci=0;ci<condArray.length;ci++) {
-              farray.push('+N("__if__")+if(and('+condArray[ci]+',isnumber('+valueArray[ci]+')),N("__then__")+'+valueArray[ci]+' ,1/0)');
+              farray.push('iferror(');
             }
-            farray.push('+N("__if__")+if(and(1,1),0,0/1),"")');
+            farray.push('(');
+            for (var ci=0;ci<condArray.length;ci++) {
+              farray.push('N("__if__")+if(and('+condArray[ci]+',isnumber('+valueArray[ci]+')),N("__then__")+'+valueArray[ci]+' ,1/0)),');
+            }
+            farray.push('N("__if__")+if(and(1,1/0,1))),"")');
             f = farray.join('');
           }
           var _row = dollerRow;
