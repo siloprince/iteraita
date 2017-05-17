@@ -109,7 +109,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
             continue;
           }
           // mod(1103515245 * iferror(index(擬似乱数,N("__n__")+row()-1
-          if (/^([\s\S]*)iferror\(index\((|filter\(offset\(|offset\(offset\()(.*),([\.0-9--]*)\+N\("__([^_]+)__"\)([\s\S]*)$/.test(parts[pi])) {
+          if (/^([\s\S]*)iferror\(index\((filter\(offset\(|offset\(offset\(|)(.*),([\.0-9--]*)\+N\("__([^_]+)__"\)([\s\S]*)$/.test(parts[pi])) {
             var rest = RegExp.$1;
             var item = RegExp.$3;
             var num = RegExp.$4;
@@ -472,13 +472,15 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           }
           if (f.indexOf('pack') > -1) {
             var target = 'offset($1,' + frozenRows + '+N("__pack__"),0,' + (maxRows - frozenRows) + ',1)';
-            var rep = 'iferror(index(filter(' + target + ',' + target + '<>""),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
+            var subtarget = target.replace('+N("__pack__")','');
+            var rep = 'iferror(index(filter(' + target + ',' + subtarget + '<>""),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
             f = f.replace(/pack\s*\(\s*([^\s\)]+)\s*\)/g, rep);
           }
           if (f.indexOf('subseq') > -1) {
             var target = 'offset($1,' + frozenRows + '+N("__subseq__"),0,' + (maxRows - frozenRows) + ',1)';
-            var start = 'match(index(filter(' + target + ',' + target + '<>""),1,1),' + target + ',0)';
-            var end = 'match("_",arrayformula(if(offset(' + target + ',' + start + '-1,0)="","_",offset(' + target + ',' + start + '-1,0))),0)';
+            var subtarget = target.replace('+N("__subseq__")','');
+            var start = 'match(index(filter(' + subtarget + ',' + subtarget + '<>""),1,1),' + subtarget + ',0)';
+            var end = 'match("_",arrayformula(if(offset(' + subtarget + ',' + start + '-1,0)="","_",offset(' + subtarget + ',' + start + '-1,0))),0)';
             var rep = 'iferror(index(offset(' + target + ',' + start + '-1,0,' + end + ',1),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
             f = f.replace(/subseq\s*\(\s*([^\s\)]+)\s*\)/g, rep);
           }
