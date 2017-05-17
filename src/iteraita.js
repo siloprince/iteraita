@@ -218,7 +218,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
         var parts = formulas[fi].split(sidesep);
         for (var pi = 0; pi < parts.length; pi++) {
           if (parts[pi] !== 'T("__EMPTY__")') {
-            farray.push('['+parts[pi]+']');
+            farray.push('[' + parts[pi] + ']');
           }
         }
         formulas[fi] = farray.join('\n');
@@ -480,10 +480,29 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                 var valueArray = [];
                 var condArray = [];
                 valueArray.push(splitArray.shift());
-                for (var si = 0; si < splitArray.length; si++) {
-                  var detailArray = splitArray[si].split('}');
-                  condArray.push(detailArray[0].slice(detailArray[0].indexOf('{') + 1));
-                  valueArray.push(detailArray[1]);
+                if (splitArray[0].trim().indexOf('{') !== 0) {
+                  if (splitArray.length === 1) {
+                    condArray.push(splitArray[0]);
+                  }
+                } else {
+                  for (var si = 0; si < splitArray.length; si++) {
+                    var detailArray = splitArray[si].split('}');
+                    var condtmp = '';
+                    var nextvalueflag = 0;
+                    var nextvaluetmp = '';
+                    for (var di = 0; di < detailArray.length; di++) {
+                      if (detailArray[di].trim().lastIndexOf('{') === -1) {
+                        nextvalueflag++;
+                      }
+                      if (nextvalueflag <= 1) {
+                        condtmp += detailArray[di] + '}';
+                      } else {
+                        nextvaluetmp += detailArray[di] + '}';
+                      }
+                    }
+                    condArray.push(condtmp.trim().slice(1, -1));
+                    valueArray.push(nextvaluetmp);
+                  }
                 }
                 var farray = ['iferror('];
                 for (var ci = 0; ci < condArray.length; ci++) {
@@ -600,7 +619,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                         vval = f;
                       }
                     }
-                  } 　else if (orgf.indexOf('last(') > -1 || orgf.indexOf('head(') > -1) {
+                  } else if (orgf.indexOf('last(') > -1 || orgf.indexOf('head(') > -1) {
                     if (orgf.indexOf(')') === orgf.length - 1) {
                       vval = f;
                     }
@@ -624,7 +643,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                         if (orgf.indexOf(' ') === -1 && orgf.indexOf('/') === -1
                           && orgf.indexOf('+') === -1 && orgf.indexOf('-') === -1
                           && orgf.indexOf('*') === -1) {
-                          vval = 'index(' + f + ',column()+(' + (_row - _col-1) + '))';
+                          vval = 'index(' + f + ',column()+(' + (_row - _col - 1) + '))';
                         }
                       }
                     }
