@@ -518,7 +518,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               if (f.indexOf('`') > -1) {
                 sideBad = 1;
 
-                var left = '+($4.0)+len("$2")-1';
+                var left = '$4.0+if("$4"="",len("$2"),0)';
                 var addr = 'regexreplace(address(row($1),column($1)-(' + left + '),4),"[0-9]+","")';
                 var itemLabel = 'indirect('+addr+'&":"&'+addr+')';
                 var rep = 'iferror(index(if("$1"="$1",' + itemLabel + ',$1),$4.0+N("__left__")-len("$2")+N("__prev__")-1-($4.0)+len("$2")+row()+N("__formula__")),"")';
@@ -529,11 +529,12 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             sideBadArray.push(sideBad);
             // +N("__formula__")),"")
             if (f.indexOf('\'') > -1) {
+              var prev = 'if("$4"="",len("$2"),1)';
               var collabel = getColumnLabel(wi + 1);
               var itemLabel = collabel + ':' + collabel;
               // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),"") 
               // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),"")
-              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$4.0+N("__prev__")-len("$2")+row()+N("__formula__")),"")';
+              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$4.0+N("__prev__")-('+prev+')+row()+N("__formula__")),"")';
 
               f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+)({([0-9]+)}|([0-9]*))/g, rep);
             }
