@@ -12,35 +12,35 @@ function onEdit(ev) {
   var targetWidth = targetRange.getWidth();
   var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
   var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
-  processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRange,formulaListRange);
-  processSingleEmptyFormula(spread,sheet,ev,targetRow,targetColumn,formulaListRange);
-  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth,itemNameListRange,formulaListRange);
+  processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRange, formulaListRange);
+  processSingleEmptyFormula(spread, sheet, ev, targetRow, targetColumn, formulaListRange);
+  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth, itemNameListRange, formulaListRange);
   return true;
 }
-function getObjectType ( object ) {
-  return Object.prototype.toString.call(object).replace(/\[object (\w+)\]$/,'$1');
+function getObjectType(object) {
+  return Object.prototype.toString.call(object).replace(/\[object (\w+)\]$/, '$1');
 }
-function processSingleEmptyFormula(spread,sheet,ev,targetRow,targetColumn,formulaListRange) {
-// if onEdit for multiple cell ev.value = {}, ev.oldValue = undefined
-// if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
-//                           ev.value = "x", ev.oldValue = undefined if chagned from "" to "x"
-//Logger.log(JSON.stringify(ev.value)+':'+JSON.stringify(ev.oldValue));
-  if (getObjectType(ev.value)==='Object' && getObjectType(ev.oldValue)==='String') {
-    if (targetRow===formulaListRange.getRow()) {
-       var maxRows = sheet.getMaxRows();
-       sheet.getRange(targetRow+1,targetColumn,maxRows-targetRow,1).setValue('');
+function processSingleEmptyFormula(spread, sheet, ev, targetRow, targetColumn, formulaListRange) {
+  // if onEdit for multiple cell ev.value = {}, ev.oldValue = undefined
+  // if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
+  //                           ev.value = "x", ev.oldValue = undefined if chagned from "" to "x"
+  //Logger.log(JSON.stringify(ev.value)+':'+JSON.stringify(ev.oldValue));
+  if (getObjectType(ev.value) === 'Object' && getObjectType(ev.oldValue) === 'String') {
+    if (targetRow === formulaListRange.getRow()) {
+      var maxRows = sheet.getMaxRows();
+      sheet.getRange(targetRow + 1, targetColumn, maxRows - targetRow, 1).setValue('');
     }
   }
 }
-function getColumnLabel (index) {
-  var mod = ((index-1)%26);
-  var modStr = String.fromCharCode("A".charCodeAt(0)+mod);
-  var quot = ((index-1-mod)/26);
-  var quotStr =  String.fromCharCode("A".charCodeAt(0)-1+quot);
-  if (quot==0) { quotStr = ""; }
-  return quotStr+modStr;
+function getColumnLabel(index) {
+  var mod = ((index - 1) % 26);
+  var modStr = String.fromCharCode("A".charCodeAt(0) + mod);
+  var quot = ((index - 1 - mod) / 26);
+  var quotStr = String.fromCharCode("A".charCodeAt(0) - 1 + quot);
+  if (quot == 0) { quotStr = ""; }
+  return quotStr + modStr;
 }
-function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRange,formulaListRange) {
+function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRange, formulaListRange) {
   var itemNameListRow = itemNameListRange.getRow();
   var namedRanges = spread.getNamedRanges();
   if (targetRow <= itemNameListRow && itemNameListRow <= targetRow + targetHeight - 1) {
@@ -54,15 +54,15 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
       } else if (conved.length === 0) {
         itemNameList.push(conved);
       } else {
-        if (conved.indexOf('_')<=0) { 
+        if (conved.indexOf('_') <= 0) {
           if (!(conved in nameDupHash)) {
             nameDupHash[conved] = 2;
           }
         } else {
           // TODO: multiple _\d_\d
-          conved = conved.replace(/_[0-9]+$/,'');
+          conved = conved.replace(/_[0-9]+$/, '');
           if (!(conved in nameDupHash)) {
-            nameDupHash[conved] = 2;            
+            nameDupHash[conved] = 2;
           }
         }
         for (var rj = 0; rj < rawItemNameList.length; rj++) {
@@ -118,65 +118,65 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
             if (func.indexOf('prev') === 0) {
               // -len("$2")
               end = end.slice('-len("'.length);
-              var endnum = end.indexOf('"');  
-              var dcount = -parseInt(num, 10) +endnum;
+              var endnum = end.indexOf('"');
+              var dcount = -parseInt(num, 10) + endnum;
               var darray = [];
               for (var di = 0; di < dcount; di++) {
                 darray.push('\'');
               }
               var argvend = ')';
-              if (item.indexOf(','+argvend)!==-1) {
+              if (item.indexOf(',' + argvend) !== -1) {
                 parts[pi] = rest + darray.join('');
               } else {
-                item = item.slice(0,-argvend.length);
-                item = item.slice(item.indexOf(',')+1);
-                item = item.slice(item.indexOf(',')+1);
-                parts[pi] = rest +item+darray.join('');
+                item = item.slice(0, -argvend.length);
+                item = item.slice(item.indexOf(',') + 1);
+                item = item.slice(item.indexOf(',') + 1);
+                parts[pi] = rest + item + darray.join('');
               }
             } else if (func.indexOf('right') === 0) {
               // -len("$2")
               end = end.slice('-len("'.length);
-              var endnum = end.indexOf('"');  
-              var dcount = -parseInt(num, 10) +endnum;
+              var endnum = end.indexOf('"');
+              var dcount = -parseInt(num, 10) + endnum;
               var darray = [];
               for (var di = 0; di < dcount; di++) {
                 darray.push('`');
               }
               var argvend = ')';
-              if (item.indexOf(','+argvend)!==-1) {
+              if (item.indexOf(',' + argvend) !== -1) {
                 parts[pi] = rest + darray.join('');
               } else {
-                item = item.slice(item.indexOf('"')+1);
-                item = item.sliace(0,-(item.length-item.indexOf('"')));
-                parts[pi] = rest +item+darray.join('');
+                item = item.slice(item.indexOf('"') + 1);
+                item = item.sliace(0, -(item.length - item.indexOf('"')));
+                parts[pi] = rest + item + darray.join('');
               }
             } else if (func.indexOf('argv') === 0) {
               num = -parseInt(num, 10);
               var argvend = ')';
-              if (item.indexOf(','+argvend)!==-1) {
+              if (item.indexOf(',' + argvend) !== -1) {
                 parts[pi] = rest + '$' + num + '';
               } else {
-                item = item.slice(0,-argvend.length);
-                item = item.slice(item.indexOf(',')+1);
-                item = item.slice(item.indexOf(',')+1);
-                parts[pi] = rest +item+'$' + num + '';
+                item = item.slice(0, -argvend.length);
+                item = item.slice(item.indexOf(',') + 1);
+                item = item.slice(item.indexOf(',') + 1);
+                parts[pi] = rest + item + '$' + num + '';
               }
             } else if (func.indexOf('head') === 0 || func.indexOf('last') === 0) {
               parts[pi] = rest + func + '(' + item + ')';
-              if (num!=='') {
+              if (num !== '') {
                 num = parseInt(num, 10);
                 if (func.indexOf('last') === 0) {
                   num = -num;
-                  if (end.indexOf('+1-if(""="",1,0)')>-1) {
+                  if (end.indexOf('+1-if(""="",1,0)') > -1) {
                     num += 1;
                   }
                 } else {
-                  if (end.indexOf('-1+if(""="",1,0)')>-1) {
+                  if (end.indexOf('-1+if(""="",1,0)') > -1) {
                     num += 1;
                   }
                 }
-                if (num!==1) {
-                  parts[pi] = rest + func + '(' + item + ','+num+')';
+                if (num !== 1) {
+                  parts[pi] = rest + func + '(' + item + ',' + num + ')';
                 }
               }
             } else {
@@ -196,16 +196,16 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
         var tailsep = ',1/0)),';
         var parts = formulas[fi].split(ifsep);
         for (var pi = 0; pi < parts.length; pi++) {
-          if (pi === 0 || pi===parts.length-1) {
+          if (pi === 0 || pi === parts.length - 1) {
             continue;
           }
           var condval = parts[pi].split(elsep2);
           var cond = condval[0].split(elsep1);
-          var val = condval[1].slice(0,-tailsep.length).trim();
-          if (parts.length===3) {
-            farray.push(val+' | '+cond[0].trim()+'');
+          var val = condval[1].slice(0, -tailsep.length).trim();
+          if (parts.length === 3) {
+            farray.push(val + ' | ' + cond[0].trim() + '');
           } else {
-            farray.push(val+' | { '+cond[0].trim()+' }');
+            farray.push(val + ' | { ' + cond[0].trim() + ' }');
           }
         }
         formulas[fi] = farray.join('\n');
@@ -280,67 +280,67 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
     // TODO: support more bad characters
     str = str.toUpperCase();
     var head = str.charCodeAt(0);
-    if (str.length===1) {
+    if (str.length === 1) {
       // C and R is not available
-      if ('A'.charCodeAt(0) <= head && head <'Z'.charCodeAt(0)) {
+      if ('A'.charCodeAt(0) <= head && head < 'Z'.charCodeAt(0)) {
         str = '英' + str;
         return str;
       }
     }
-    if (str.indexOf('０')>-1) {
+    if (str.indexOf('０') > -1) {
       str = str.replace(/０/g, '0');
     }
-    if (str.indexOf('１')>-1) {
+    if (str.indexOf('１') > -1) {
       str = str.replace(/１/g, '1');
     }
-    if (str.indexOf('２')>-1) {
+    if (str.indexOf('２') > -1) {
       str = str.replace(/２/g, '2');
     }
-    if (str.indexOf('３')>-1) {
+    if (str.indexOf('３') > -1) {
       str = str.replace(/３/g, '3');
     }
-    if (str.indexOf('４')>-1) {
+    if (str.indexOf('４') > -1) {
       str = str.replace(/４/g, '4');
     }
-    if (str.indexOf('５')>-1) {
+    if (str.indexOf('５') > -1) {
       str = str.replace(/５/g, '5');
     }
-    if (str.indexOf('６')>-1) {
+    if (str.indexOf('６') > -1) {
       str = str.replace(/６/g, '6');
     }
-    if (str.indexOf('７')>-1) {
+    if (str.indexOf('７') > -1) {
       str = str.replace(/７/g, '7');
     }
-    if (str.indexOf('８')>-1) {
+    if (str.indexOf('８') > -1) {
       str = str.replace(/８/g, '8');
     }
-    if (str.indexOf('９')>-1) {
+    if (str.indexOf('９') > -1) {
       str = str.replace(/９/g, '9');
     }
     if (/[_\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/.test(str)) {
-        str = str.replace(/[\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/g, '＿');
+      str = str.replace(/[\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/g, '＿');
     }
     head = str.charCodeAt(0);
-    var last = str.charCodeAt(str.length-1);
-    if ('A'.charCodeAt(0) <= head && head <'Z'.charCodeAt(0) && '0'.charCodeAt(0) <= last && last <'9'.charCodeAt(0) && str.indexOf('_')===-1) {
-      var sarray=[];
-      var numflag=0;
-      for (var si=0;si<str.length;si++) {
+    var last = str.charCodeAt(str.length - 1);
+    if ('A'.charCodeAt(0) <= head && head < 'Z'.charCodeAt(0) && '0'.charCodeAt(0) <= last && last < '9'.charCodeAt(0) && str.indexOf('_') === -1) {
+      var sarray = [];
+      var numflag = 0;
+      for (var si = 0; si < str.length; si++) {
         var sv = str.charCodeAt(si);
-        if ('A'.charCodeAt(0) <= sv && sv <'Z'.charCodeAt(0) ) {
+        if ('A'.charCodeAt(0) <= sv && sv < 'Z'.charCodeAt(0)) {
           if (numflag) {
-            numflag=0;
+            numflag = 0;
             break;
           }
           sarray.push(str[si]);
-        } else if ('0'.charCodeAt(0) <= sv && sv <'9'.charCodeAt(0) ) {
-          if(numflag===0){
+        } else if ('0'.charCodeAt(0) <= sv && sv < '9'.charCodeAt(0)) {
+          if (numflag === 0) {
             sarray.push('_');
-            numflag=1;
+            numflag = 1;
           }
           sarray.push(str[si]);
         } else {
-          numflag=0;
+          numflag = 0;
           break;
         }
       }
@@ -348,7 +348,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
         str = sarray.join('');
       }
     }
-    if ('0'.charCodeAt(0) <= head && head <'9'.charCodeAt(0)) {
+    if ('0'.charCodeAt(0) <= head && head < '9'.charCodeAt(0)) {
       str = '数' + str;
       return str;
     }
@@ -356,7 +356,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
   }
 }
 
-function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth,itemNameListRange,formulaListRange) {
+function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth, itemNameListRange, formulaListRange) {
   var itemNameList = itemNameListRange.getValues()[0];
   var formulaListRow = formulaListRange.getRow();
   if (targetRow <= formulaListRow && formulaListRow <= targetRow + targetHeight - 1) {
@@ -370,7 +370,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     }
     var startw = targetColumn;
     var endw = startw + targetWidth - 1;
-    updateFormulas(formulaList, formulaListRange, startw, endw,itemNameList);
+    updateFormulas(formulaList, formulaListRange, startw, endw, itemNameList);
   }
   return;
 
@@ -387,7 +387,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       return str;
     }
   }
-  function updateFormulas(formulaList, range, startw, endw,itemNameList) {
+  function updateFormulas(formulaList, range, startw, endw, itemNameList) {
     var sheet = range.getSheet();
     var frozenRows = sheet.getFrozenRows();
     var maxRows = sheet.getMaxRows();
@@ -431,121 +431,180 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           sheet.getRange(row + 1, wi + 1, 1, 1).setFormula(f);
           sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
 
-        } else { 
+        } else {
+          var side = 0;
+          var constval = 4;
+          var formulaArray = [];
+          var convArray = [];
+          var sideBadArray = [];
+          var orgf = f;
+          if (f.indexOf('[') > -1) {
+            side = 1;
+            var splitArray = f.split(']');
+            for (var si = 0; si < 4; si++) {
+              var sj = splitArray.length - 1 - si;
+              var val = splitArray[sj].slice(splitArray[sj].indexOf('[') + 1);
+              formulaArray.push(val.trim());
+            }
+          } else {
+            formulaArray.push(f);
+          }
+          for (var fi = 0; fi < formulaArray.length; fi++) {
 
-          if (f.indexOf('|') > -1) {
-            var splitArray = f.split('|');
-            var valueArray = [];
-            var condArray = [];
-            valueArray.push(splitArray.shift());
-            for (var si=0;si<splitArray.length;si++) {
-              var detailArray = splitArray[si].split('}');
-              condArray.push(detailArray[0].slice(detailArray[0].indexOf('{')+1));
-              valueArray.push(detailArray[1]);
-            }
-            var farray = ['iferror('];
-            for (var ci=0;ci<condArray.length;ci++) {
-              farray.push('iferror(');
-            }
-            farray.push('(');
-            for (var ci=0;ci<condArray.length;ci++) {
-              farray.push('N("__if__")+if(and('+condArray[ci]+',isnumber('+valueArray[ci]+')),N("__then__")+'+valueArray[ci]+' ,1/0)),');
-            }
-            farray.push('N("__if__")+if(and(1,1/0,1))),"")');
-            f = farray.join('');
-          }            
-          // +N("__formula__")),"")
-          if (f.indexOf('\'') > -1) {
-            var collabel = getColumnLabel(wi+1);
-            var itemLabel = collabel+':'+collabel;
-            // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),"") 
-            // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),"")
-            var rep = 'iferror(index(if("$1"="",'+itemLabel+',$1),-$3.0+N("__prev__")-len("$2")+row()+N("__formula__")),"")';
+            f = formulaArray[fi];
+            sideBad = 0;
+            // side unsupported
+            {
+              if (f.indexOf('|') > -1) {
+                sideBad = 1;
 
-            f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+)({[0-9]+}|[0-9]*)/g, rep);
-          }
-          if (f.indexOf('`') > -1) {
-            var right = '+($3.0)+len("$2")-1';
-            var itemLabel = 'indirect(regexreplace(address(row($1),column($1)'+right+',4),"[0-9]+","")&":"&regexreplace(address(row($1),column($1)'+right+',4),"[0-9]+",""))';
-            var rep = 'iferror(index(if("$1"="$1",'+itemLabel+',$1),$3.0+N("__right__")-len("$2")+N("__prev__")-1-($3.0)+len("$2")+row()+N("__formula__")),"")';
- 
-            f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)({[0-9--]+}|[0-9--]*)/g, rep);
-          }
-          if (f.indexOf('$') > -1) {
-            var collabel = getColumnLabel(wi+1);
-            var itemLabel = collabel+':'+collabel;
-          
-            var rep = 'iferror(index(if("$1"="",'+itemLabel+',$1),-$3.0+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
-            
-            f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(\$+)([0-9]+)/g, rep);
-            if (f.indexOf('${')>-1) {
-             f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(\$+){([0-9]+)}/g, rep);
-            }
-          }
-          if (f.indexOf('head') > -1) {
-            var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+if("$2"="",1,0)+' + (frozenRows + 1) + '+N("__formula__")),"")';
-            f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
-            if (itemName.length>0) {
-              var headname = 'N("__head__")+N("'+itemName+'")';
-              if (f.indexOf(headname) > -1){
-                f = f.replace(headname,'N("__head__")+N("__prev__")');
+                var splitArray = f.split('|');
+                var valueArray = [];
+                var condArray = [];
+                valueArray.push(splitArray.shift());
+                for (var si = 0; si < splitArray.length; si++) {
+                  var detailArray = splitArray[si].split('}');
+                  condArray.push(detailArray[0].slice(detailArray[0].indexOf('{') + 1));
+                  valueArray.push(detailArray[1]);
+                }
+                var farray = ['iferror('];
+                for (var ci = 0; ci < condArray.length; ci++) {
+                  farray.push('iferror(');
+                }
+                farray.push('(');
+                for (var ci = 0; ci < condArray.length; ci++) {
+                  farray.push('N("__if__")+if(and(' + condArray[ci] + ',isnumber(' + valueArray[ci] + ')),N("__then__")+' + valueArray[ci] + ' ,1/0)),');
+                }
+                farray.push('N("__if__")+if(and(1,1/0,1))),"")');
+                f = farray.join('');
+              }
+              if (f.indexOf('`') > -1) {
+                sideBad = 1;
+
+                var right = '+($3.0)+len("$2")-1';
+                var itemLabel = 'indirect(regexreplace(address(row($1),column($1)' + right + ',4),"[0-9]+","")&":"&regexreplace(address(row($1),column($1)' + right + ',4),"[0-9]+",""))';
+                var rep = 'iferror(index(if("$1"="$1",' + itemLabel + ',$1),$3.0+N("__right__")-len("$2")+N("__prev__")-1-($3.0)+len("$2")+row()+N("__formula__")),"")';
+
+                f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)({[0-9--]+}|[0-9--]*)/g, rep);
               }
             }
-          }
-          if (f.indexOf('last') > -1) {
-            var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if("$3"="",1,0)+' + (maxRows) + '+N("__formula__")),"")';
-            f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
-          }
-          if (f.indexOf('pack') > -1) {
-            var target = 'offset($1,' + frozenRows + '+N("__pack__"),0,' + (maxRows - frozenRows) + ',1)';
-            var subtarget = target.replace('+N("__pack__")','');
-            var rep = 'iferror(index(filter(' + target + ',' + subtarget + '<>""),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
-            f = f.replace(/pack\s*\(\s*([^\s\)]+)\s*\)/g, rep);
-          }
-          if (f.indexOf('subseq') > -1) {
-            var target = 'offset($1,' + frozenRows + '+N("__subseq__"),0,' + (maxRows - frozenRows) + ',1)';
-            var subtarget = target.replace('+N("__subseq__")','');
-            var start = 'match(index(filter(' + subtarget + ',' + subtarget + '<>""),1,1),' + subtarget + ',0)';
-            var end = 'match("_",arrayformula(if(offset(' + subtarget + ',' + start + '-1,0)="","_",offset(' + subtarget + ',' + start + '-1,0))),0)';
-            var rep = 'iferror(index(offset(' + target + ',' + start + '-1,0,' + end + ',1),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
-            f = f.replace(/subseq\s*\(\s*([^\s\)]+)\s*\)/g, rep);
+            sideBadArray.push(sideBad);
+            // +N("__formula__")),"")
+            if (f.indexOf('\'') > -1) {
+              var collabel = getColumnLabel(wi + 1);
+              var itemLabel = collabel + ':' + collabel;
+              // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),"") 
+              // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),"")
+              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$3.0+N("__prev__")-len("$2")+row()+N("__formula__")),"")';
+
+              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+)({[0-9]+}|[0-9]*)/g, rep);
+            }
+            if (f.indexOf('pack') > -1) {
+              var target = 'offset($1,' + frozenRows + '+N("__pack__"),0,' + (maxRows - frozenRows) + ',1)';
+              var subtarget = target.replace('+N("__pack__")', '');
+              var rep = 'iferror(index(filter(' + target + ',' + subtarget + '<>""),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
+              f = f.replace(/pack\s*\(\s*([^\s\)]+)\s*\)/g, rep);
+            }
+            if (f.indexOf('subseq') > -1) {
+              var target = 'offset($1,' + frozenRows + '+N("__subseq__"),0,' + (maxRows - frozenRows) + ',1)';
+              var subtarget = target.replace('+N("__subseq__")', '');
+              var start = 'match(index(filter(' + subtarget + ',' + subtarget + '<>""),1,1),' + subtarget + ',0)';
+              var end = 'match("_",arrayformula(if(offset(' + subtarget + ',' + start + '-1,0)="","_",offset(' + subtarget + ',' + start + '-1,0))),0)';
+              var rep = 'iferror(index(offset(' + target + ',' + start + '-1,0,' + end + ',1),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
+              f = f.replace(/subseq\s*\(\s*([^\s\)]+)\s*\)/g, rep);
+            }
+            if (f.indexOf('$') > -1) {
+              var collabel = getColumnLabel(wi + 1);
+              var itemLabel = collabel + ':' + collabel;
+
+              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$3.0+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
+
+              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(\$+)([0-9]+)/g, rep);
+              if (f.indexOf('${') > -1) {
+                f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(\$+){([0-9]+)}/g, rep);
+              }
+            }
+            if (f.indexOf('head') > -1) {
+              var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+if("$2"="",1,0)+' + (frozenRows + 1) + '+N("__formula__")),"")';
+              f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
+              if (itemName.length > 0) {
+                var headname = 'N("__head__")+N("' + itemName + '")';
+                if (f.indexOf(headname) > -1) {
+                  f = f.replace(headname, 'N("__head__")+N("__prev__")');
+                }
+              }
+            }
+            if (f.indexOf('last') > -1) {
+              var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if("$3"="",1,0)+' + (maxRows) + '+N("__formula__")),"")';
+              f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
+            }
+            convArray.push(f);
           }
           var _row = dollerRow;
           var _col = wi + 1;
           var _height = dollerHeight;
           var _width = 1;
           // set to protocode
-          sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
-          if (f.indexOf('N("__prev__")') > -1) {
-            // remove errors on initals
-            var errors = sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).getValues();
-            var corrects = [];
-            var hasError = false;
-            for (var ei = 0; ei < errors.length; ei++) {
-              if (/^#.*!$/.test(errors[ei][0])) {
-                corrects.push(['']);
-                hasError = true;
-              } else {
-                corrects.push([errors[ei][0]])
+          if (side) {
+            var store = convArray.join('+N("__SIDE__")+');
+            sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + store + '))),"")');
+            var ff = 'iferror(if(' + f + '="","",+' + f + '),"")';
+            for (var ci = 0; ci < constval; ci++) {
+              sheet.getRange(row + 3 + ci, _col.setFormula(ff);
+              var wval = 1;
+              var vval = '';
+              if (sideBadArray[ci] === 0) {
+                if (f.indexOf(row()) === -1) {
+                  for (var oi = 0; oi < f.length; oi++) {
+                    var code = f[oi].charCodeAt();
+                  }
+                } else if (f.index(')') === f.length - 1) {
+                  if (orgf.indexOf('last(') > -1) {
+                  } else if (orgf.indexOf('head(') > -1) {
+                  } else if (orgf.indexOf('pack(') > -1) {
+                  } else if (orgf.indexOf('subseq(') > -1) {
+                  }
+                }
               }
+              sheet.getRange().getValues();
             }
-            if (hasError) {
-              sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).setValues(corrects);
+            if (wval > 0) {
+              sheet.getRange(row + 3 + ci, _col + 1, 1, wval).setFormula(f);
             }
           } else {
-            var ff = 'iferror(if(' + f + '="","",+'+f+'),"")';
-            sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), _width).setFormula(ff);
-          }
-          if (f.indexOf('__@') > -1) {
-            sheet.getRange(_row, _col, _height, _width).setFormula('');
-            var therange = sheet.getRange(_row, _col);
-            therange.setFormula(f);
-            var val = therange.getValue();
-            var time = (new Date()).getTime();
-            therange.setFormula('"' + val + '"&T(N("__#' + time + '__"))');
+            f = convArray[0];
+            sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
+            if (f.indexOf('N("__prev__")') > -1) {
+              // remove errors on initals
+              var errors = sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).getValues();
+              var corrects = [];
+              var hasError = false;
+              for (var ei = 0; ei < errors.length; ei++) {
+                if (/^#.*!$/.test(errors[ei][0])) {
+                  corrects.push(['']);
+                  hasError = true;
+                } else {
+                  corrects.push([errors[ei][0]])
+                }
+              }
+              if (hasError) {
+                sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).setValues(corrects);
+              }
+            } else {
+              var ff = 'iferror(if(' + f + '="","",+' + f + '),"")';
+              sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), _width).setFormula(ff);
+            }
+            if (f.indexOf('__@') > -1) {
+              sheet.getRange(_row, _col, _height, _width).setFormula('');
+              var therange = sheet.getRange(_row, _col);
+              therange.setFormula(f);
+              var val = therange.getValue();
+              var time = (new Date()).getTime();
+              therange.setFormula('"' + val + '"&T(N("__#' + time + '__"))');
 
-          } else {
-            sheet.getRange(_row, _col, _height, _width).setFormula(f);
+            } else {
+              sheet.getRange(_row, _col, _height, _width).setFormula(f);
+            }
           }
         }
       }
@@ -725,6 +784,6 @@ function refresh(spread) {
   var targetWidth = formulaRange.getWidth();
   var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
   var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
-  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth,itemNameListRange,formulaListRange);
+  processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth, itemNameListRange, formulaListRange);
   sheet.getRange(4, 1, 1, maxCols).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
 }
