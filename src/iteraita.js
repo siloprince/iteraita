@@ -431,29 +431,45 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           sheet.getRange(row + 1, wi + 1, 1, 1).setFormula(f);
           sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
 
-        } else {   
+        } else { 
+
+          if (f.indexOf('|') > -1) {
+            var splitArray = f.split('|');
+            var valueArray = [];
+            var condArray = [];
+            valueArray.push(splitArray.shift());
+            for (var si=0;si<splitArray.length;si++) {
+              var detailArray = splitArray[si].split('}');
+              condArray.push(detailArray[0].slice(detailArray[0].indexOf('{')+1));
+              valueArray.push(detailArray[1]);
+            }
+            var farray = ['iferror('];
+            for (var ci=0;ci<condArray.length;ci++) {
+              farray.push('iferror(');
+            }
+            farray.push('(');
+            for (var ci=0;ci<condArray.length;ci++) {
+              farray.push('N("__if__")+if(and('+condArray[ci]+',isnumber('+valueArray[ci]+')),N("__then__")+'+valueArray[ci]+' ,1/0)),');
+            }
+            farray.push('N("__if__")+if(and(1,1/0,1))),"")');
+            f = farray.join('');
+          }            
           // +N("__formula__")),"")
           if (f.indexOf('\'') > -1) {
             var collabel = getColumnLabel(wi+1);
             var itemLabel = collabel+':'+collabel;
             // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),"") 
             // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),"")
-            var rep = 'iferror(index(if("$1"="",'+itemLabel+',$1),-$3.0+N("__prev__")-len("$2")+row()+N("__formula__"))$4,"")';
+            var rep = 'iferror(index(if("$1"="",'+itemLabel+',$1),-$3.0+N("__prev__")-len("$2")+row()+N("__formula__")),"")';
 
-            f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+)([0-9]*)([^{]+|$)/g, rep);
-            if (f.indexOf('\'{')>-1) {
-              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+){([0-9]+)}(\s\S+)/g, rep);
-            }
+            f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+)({[0-9]+}|[0-9]*)/g, rep);
           }
           if (f.indexOf('`') > -1) {
             var right = '+($3.0)+len("$2")-1';
             var itemLabel = 'indirect(regexreplace(address(row($1),column($1)'+right+',4),"[0-9]+","")&":"&regexreplace(address(row($1),column($1)'+right+',4),"[0-9]+",""))';
-            var rep = 'iferror(index(if("$1"="$1",'+itemLabel+',$1),$3.0+N("__right__")-len("$2")+N("__prev__")-1-($3.0)+len("$2")+row()+N("__formula__")),"")$4';
+            var rep = 'iferror(index(if("$1"="$1",'+itemLabel+',$1),$3.0+N("__right__")-len("$2")+N("__prev__")-1-($3.0)+len("$2")+row()+N("__formula__")),"")';
  
-            f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)([0-9--]*)([^{]+|$)/g, rep);
-            if (f.indexOf('`{')>-1) {
-              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+){([0-9--]+)}(\s\S+)/g, rep);
-            }
+            f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)({[0-9--]+}|[0-9--]*)/g, rep);
           }
           if (f.indexOf('$') > -1) {
             var collabel = getColumnLabel(wi+1);
@@ -493,27 +509,6 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             var end = 'match("_",arrayformula(if(offset(' + subtarget + ',' + start + '-1,0)="","_",offset(' + subtarget + ',' + start + '-1,0))),0)';
             var rep = 'iferror(index(offset(' + target + ',' + start + '-1,0,' + end + ',1),if(row()-' + (frozenRows) + '>0,row()-' + (frozenRows) + ',-1)+N("__formula__")),"")';
             f = f.replace(/subseq\s*\(\s*([^\s\)]+)\s*\)/g, rep);
-          }
-          if (f.indexOf('|') > -1) {
-            var splitArray = f.split('|');
-            var valueArray = [];
-            var condArray = [];
-            valueArray.push(splitArray.shift());
-            for (var si=0;si<splitArray.length;si++) {
-              var detailArray = splitArray[si].split('}');
-              condArray.push(detailArray[0].slice(detailArray[0].indexOf('{')+1));
-              valueArray.push(detailArray[1]);
-            }
-            var farray = ['iferror('];
-            for (var ci=0;ci<condArray.length;ci++) {
-              farray.push('iferror(');
-            }
-            farray.push('(');
-            for (var ci=0;ci<condArray.length;ci++) {
-              farray.push('N("__if__")+if(and('+condArray[ci]+',isnumber('+valueArray[ci]+')),N("__then__")+'+valueArray[ci]+' ,1/0)),');
-            }
-            farray.push('N("__if__")+if(and(1,1/0,1))),"")');
-            f = farray.join('');
           }
           var _row = dollerRow;
           var _col = wi + 1;
