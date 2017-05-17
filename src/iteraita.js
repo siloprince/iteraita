@@ -133,7 +133,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
                 item = item.slice(item.indexOf(',') + 1);
                 parts[pi] = rest + item + darray.join('');
               }
-            } else if (func.indexOf('right') === 0) {
+            } else if (func.indexOf('left') === 0) {
               // -len("$2")
               end = end.slice('-len("'.length);
               var endnum = end.indexOf('"');
@@ -518,9 +518,10 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               if (f.indexOf('`') > -1) {
                 sideBad = 1;
 
-                var right = '+($4.0)+len("$2")-1';
-                var itemLabel = 'indirect(regexreplace(address(row($1),column($1)' + right + ',4),"[0-9]+","")&":"&regexreplace(address(row($1),column($1)' + right + ',4),"[0-9]+",""))';
-                var rep = 'iferror(index(if("$1"="$1",' + itemLabel + ',$1),$4.0+N("__right__")-len("$2")+N("__prev__")-1-($4.0)+len("$2")+row()+N("__formula__")),"")';
+                var left = '+($4.0)+len("$2")-1';
+                var addr = 'regexreplace(address(row($1),column($1)-(' + left + '),4),"[0-9]+","")';
+                var itemLabel = 'indirect('+addr+'&":"&'+addr+')';
+                var rep = 'iferror(index(if("$1"="$1",' + itemLabel + ',$1),$4.0+N("__left__")-len("$2")+N("__prev__")-1-($4.0)+len("$2")+row()+N("__formula__")),"")';
 
                 f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)({([0-9--]+)}|([0-9--]*))/g, rep);
               }
