@@ -210,6 +210,19 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
         }
         formulas[fi] = farray.join('\n');
       }
+      // 
+      // =T("__EMPTY__")+N("__SIDE__")+T("__EMPTY__")+N("__SIDE__")+22+N("__SIDE__")+3
+      var sidesep = '+N("__SIDE__")+';
+      if (formulas[fi].indexOf(sidesep) > -1) {
+        var farray = [];
+        var parts = formulas[fi].split(sidesep);
+        for (var pi = 0; pi < parts.length; pi++) {
+          if (parts[pi] !== 'T("__EMPTY__")') {
+            farray.push('['+parts[pi]+']');
+          }
+        }
+        formulas[fi] = farray.join('\n');
+      }
       // =iferror(T(N(to_text(if(isnumber(222),222,T(N("__@2__"))&222)))),"")
       if (formulas[fi].indexOf('T(N("__@') > -1) {
         if (/\T\(N\("__@(@|[0-9\.]+)__"\)\)&([\s\S]*)\)$/.test(formulas[fi])) {
@@ -438,16 +451,21 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           var convArray = [];
           var sideBadArray = [];
           var orgf = f;
-          if (f.indexOf('[') > -1) {
+          if (orgf.indexOf('[') > -1) {
             side = 1;
-            var splitArray = f.split(']');
-            for (var si = 0; si < 4; si++) {
+            var splitArray = orgf.split(']');
+            splitArray.pop();
+            for (var si = 0; si < constval; si++) {
               var sj = splitArray.length - 1 - si;
-              var val = splitArray[sj].slice(splitArray[sj].indexOf('[') + 1);
-              formulaArray.push(val.trim());
+              if (sj >= 0) {
+                var val = splitArray[sj].slice(splitArray[sj].indexOf('[') + 1);
+                formulaArray.unshift(val.trim());
+              } else {
+                formulaArray.unshift('');
+              }
             }
           } else {
-            formulaArray.push(f);
+            formulaArray.push(orgf);
           }
           for (var fi = 0; fi < formulaArray.length; fi++) {
 
@@ -538,6 +556,9 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if("$3"="",1,0)+' + (maxRows) + '+N("__formula__")),"")';
               f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
             }
+            if (f === '') {
+              f = 'T("__EMPTY__")';
+            }
             convArray.push(f);
           }
           var _row = dollerRow;
@@ -546,30 +567,71 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           var _width = 1;
           // set to protocode
           if (side) {
+            var _widthcount = 1;
+            for (var ii = _col + 1; ii < itemNameList.length; ii++) {
+              if (itemNameList[ii].trim() !== "") {
+                break;
+              }
+              _widthcount++;
+            }
             var store = convArray.join('+N("__SIDE__")+');
             sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + store + '))),"")');
-            var ff = 'iferror(if(' + f + '="","",+' + f + '),"")';
             for (var ci = 0; ci < constval; ci++) {
-              sheet.getRange(row + 3 + ci, _col.setFormula(ff);
-              var wval = 1;
-              var vval = '';
-              if (sideBadArray[ci] === 0) {
-                if (f.indexOf(row()) === -1) {
-                  for (var oi = 0; oi < f.length; oi++) {
-                    var code = f[oi].charCodeAt();
-                  }
-                } else if (f.index(')') === f.length - 1) {
-                  if (orgf.indexOf('last(') > -1) {
-                  } else if (orgf.indexOf('head(') > -1) {
-                  } else if (orgf.indexOf('pack(') > -1) {
-                  } else if (orgf.indexOf('subseq(') > -1) {
+              if (ci >= formulaArray.length) {
+                sheet.getRange(row + 3 + ci, _col + 1, 1, _widthcount).setValue('');
+              } else {
+                orgf = formulaArray[ci];
+                f = convArray[ci];
+                var wval = 1;
+                var vval = '';
+                if (sideBadArray[ci] === 0) {
+                  if (f.indexOf('row()') > -1) {
+                    f = f.replace(/row\(\)/g, 'column()+(' + (_row - _col - 1) + ')');
+                    if (orgf.indexOf(')') === orgf.length - 1) {
+                      if (
+                        orgf.indexOf('pack(') > -1 ||
+                        orgf.indexOf('subseq(') > -1) {
+                        vval = f;
+                      }
+                    } else if (orgf.indexOf('\'') === orgf.length - 1) {
+                      if (orgf.indexOf(' ') === -1 && orgf.indexOf('/') === -1
+                        && orgf.indexOf('+') === -1 && orgf.indexOf('-') === -1
+                        && orgf.indexOf('*') === -1) {
+                        vval = f;
+                      }
+                    }
+                  } 　else if (orgf.indexOf('last(') > -1 || orgf.indexOf('head(') > -1) {
+                    if (orgf.indexOf(')') === orgf.length - 1) {
+                      vval = f;
+                    }
+                  } else {
+                    if (orgf.indexOf('\(') === 0 && orgf.indexOf('\)') === orgf.length - 1) {
+                      orgf = orgf.slice(1, -1);
+                    }
+                    if (orgf === f) {
+
+                      vval = f;
+                      var startcode = '('.charCodeAt(0);
+                      var endcode = '9'.charCodeAt(0);
+                      for (var oi = 0; oi < f.length; oi++) {
+                        var code = f.charCodeAt(oi);
+                        if (!(startcode <= code && code <= endcode)) {
+                          vval = '';
+                          break;
+                        }
+                      }
+                      if (vval === '') {
+                        if (orgf.indexOf(' ') === -1 && orgf.indexOf('/') === -1
+                          && orgf.indexOf('+') === -1 && orgf.indexOf('-') === -1
+                          && orgf.indexOf('*') === -1) {
+                          vval = 'index(' + f + ',column()+(' + (_row - _col-1) + '))';
+                        }
+                      }
+                    }
                   }
                 }
               }
-              sheet.getRange().getValues();
-            }
-            if (wval > 0) {
-              sheet.getRange(row + 3 + ci, _col + 1, 1, wval).setFormula(f);
+              sheet.getRange(row + 3 + ci, _col + 1, 1, _widthcount).setFormula(vval);
             }
           } else {
             f = convArray[0];
