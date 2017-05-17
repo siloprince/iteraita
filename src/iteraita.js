@@ -438,21 +438,21 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             var itemLabel = collabel+':'+collabel;
             // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),"") 
             // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),"")
-            var rep = 'iferror(index(if("$1"="",'+itemLabel+',$1),-$3.0+N("__prev__")-len("$2")+row()+N("__formula__")),"")';
+            var rep = 'iferror(index(if("$1"="",'+itemLabel+',$1),-$3.0+N("__prev__")-len("$2")+row()+N("__formula__"))$4,"")';
 
             f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+)([0-9]*)([^{]+|$)/g, rep);
             if (f.indexOf('\'{')>-1) {
-              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+){([0-9]+)}/g, rep);
+              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+){([0-9]+)}(\s\S+)/g, rep);
             }
           }
           if (f.indexOf('`') > -1) {
             var right = '+($3.0)+len("$2")-1';
             var itemLabel = 'indirect(regexreplace(address(row($1),column($1)'+right+',4),"[0-9]+","")&":"&regexreplace(address(row($1),column($1)'+right+',4),"[0-9]+",""))';
-            var rep = 'iferror(index(if("$1"="$1",'+itemLabel+',$1),$3.0+N("__right__")-len("$2")+N("__prev__")-1-($3.0)+len("$2")+row()+N("__formula__")),"")';
+            var rep = 'iferror(index(if("$1"="$1",'+itemLabel+',$1),$3.0+N("__right__")-len("$2")+N("__prev__")-1-($3.0)+len("$2")+row()+N("__formula__")),"")$4';
  
             f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)([0-9--]*)([^{]+|$)/g, rep);
             if (f.indexOf('`{')>-1) {
-              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+){([0-9--]+)}/g, rep);
+              f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+){([0-9--]+)}(\s\S+)/g, rep);
             }
           }
           if (f.indexOf('$') > -1) {
