@@ -109,7 +109,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
             continue;
           }
           // mod(1103515245 * iferror(index(擬似乱数,N("__n__")+row()-1
-          if (/^([\s\S]*)iferror\(index\((|filter\(offset\(|offset\(offset\()([^;,{&\s\+\-\*\(]+),([\.0-9--]*)\+N\("__([^_]+)__"\)([\s\S]*)$/.test(parts[pi])) {
+          if (/^([\s\S]*)iferror\(index\((|filter\(offset\(|offset\(offset\()(.*),([\.0-9--]*)\+N\("__([^_]+)__"\)([\s\S]*)$/.test(parts[pi])) {
             var rest = RegExp.$1;
             var item = RegExp.$3;
             var num = RegExp.$4;
@@ -124,7 +124,15 @@ function processNameRange(spread, sheet, targetRow, targetHeight,itemNameListRan
               parts[pi] = rest + item + darray.join('');
             } else if (func.indexOf('argv') === 0) {
               num = -parseInt(num, 10);
-              parts[pi] = rest + '$' + num + '';
+              var argvend = '+0)';
+              if (item.indexOf(','+argvend)!==-1) {
+                parts[pi] = rest + '$' + num + '';
+              } else {
+                item = item.slice(0,-argvend.length);
+                item = item.slice(item.indexOf(',')+1);
+                item = item.slice(item.indexOf(',')+1);
+                parts[pi] = rest +' '+item+'$' + num + '';
+              }
             } else if (func.indexOf('head') === 0 || func.indexOf('last') === 0) {
               parts[pi] = rest + func + '(' + item + ')';
               if (num!=='') {
@@ -442,10 +450,10 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             var collabel = getColumnLabel(wi+1);
             var itemLabel = collabel+':'+collabel;
           
-            var rep = 'iferror(index('+itemLabel+',-$1+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
-            f = f.replace(/\$([0-9]+)/g, rep);
+            var rep = 'iferror(index(if("$1"="",'+itemLabel+',$1+0),-$2+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),"")';
+            f = f.replace(/([^;,{&\s\+\-\*\(]*)\$([0-9]+)/g, rep);
             if (f.indexOf('${')>-1) {
-              f = f.replace(/\${([0-9]+)}/g, rep);
+              f = f.replace(/([^;,{&\s\+\-\*\(]*)\${([0-9]+)}/g, rep);
             }
           }
           if (f.indexOf('head') > -1) {
