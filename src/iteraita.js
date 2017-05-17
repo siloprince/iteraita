@@ -368,49 +368,6 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         str = 'if(isnumber(' + str + '),' + str + ',T(N("__@' + timeout + '__"))&' + str + ')';
       }
       return str;
-      // TODO:
-      if (str.indexOf('\'') === -1) {
-        return str;
-      } else {
-        var formulaArray = [];
-        var dollers = str.split('\'');
-        var dcount = 0;
-        for (var di = 0; di < dollers.length; di++) {
-          var dj = dollers.length - di - 1;
-          var doll = dollers[dj];
-          if (doll.length === 0) {
-            if (dj !== 0) {
-              dcount++;
-            }
-          } else {
-            if (dj === dollers.length - 1) {
-              formulaArray.unshift(doll);
-              dcount = 1;
-              continue;
-            }
-            var item = '';
-            var rest = '';
-            if (/[;,{&\s\+\-\*\/\(]/.test(doll)) {
-              if (/[;,{&\s\+\-\*\/\(]+([^;,{&\s\+\-\*\/\(]+)$/.test(doll)) {
-                item = RegExp.$1;
-                rest = doll.replace(new RegExp(item + '$'), '');
-              }
-            } else {
-              item = doll;
-              rest = '';
-            }
-            if (item.length > 0) {
-              if (dcount === 0) {
-                formulaArray.unshift(rest + item);
-              } else {
-                formulaArray.unshift(rest + 'iferror(index(' + item + ',-' + dcount + '+N("__prev__")+row()+N("__formula__")),"")');
-              }
-            }
-            dcount = 1;
-          }
-        }
-        return formulaArray.join('');
-      }
     }
   }
   function updateFormulas(formulaList, range, startw, endw,itemNameList) {
