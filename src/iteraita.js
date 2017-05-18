@@ -516,17 +516,25 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                     var condtmp = '';
                     var nextvalueflag = 0;
                     var nextvaluetmp = '';
+                    detailArray[0] = detailArray[0].trim().slice(1);
                     for (var di = 0; di < detailArray.length; di++) {
                       if (detailArray[di].trim().lastIndexOf('{') === -1) {
                         nextvalueflag++;
                       }
-                      if (nextvalueflag <= 1) {
+                      Logger.log(detailArray[di]);
+                      if (nextvalueflag === 0) {
                         condtmp += detailArray[di] + '}';
+                      } else if (nextvalueflag === 1) {
+                        condtmp += detailArray[di];
                       } else {
-                        nextvaluetmp += detailArray[di] + '}';
+                        if (di===detailArray.length-1) {
+                          nextvaluetmp += detailArray[di];
+                        } else {
+                          nextvaluetmp += detailArray[di] + '}';
+                        }
                       }
                     }
-                    condArray.push(condtmp.trim().slice(1, -1));
+                    condArray.push(condtmp.trim());
                     valueArray.push(nextvaluetmp);
                   }
                 }
