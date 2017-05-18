@@ -5,6 +5,9 @@ function onEdit(ev) {
   var targetRange = ev.range;
   var sheet = targetRange.getSheet();
   var sheetName = sheet.getName();
+  if (sheetName!=='Sheet1') {
+    return;
+  }
   var spread = sheet.getParent();
   var targetRow = targetRange.getRow();
   var targetHeight = targetRange.getHeight();
