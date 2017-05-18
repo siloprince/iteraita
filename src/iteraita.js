@@ -117,12 +117,42 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
             var end = RegExp.$6;
             if (func.indexOf('prev') === 0) {
               // -len("$2")
+              /*
               end = end.slice('-len("'.length);
               var endnum = end.indexOf('"');
               var dcount = -parseInt(num, 10) + endnum;
+              num = parseInt(num, 10);
+              var dcount;
+              if (num === 0) {
+                dcount = endnum;
+              } else {
+                dcount = -num;
+              }
+              */
+              var p1 = 0;
+              var p2 = 0;
+              var dcount = 0;
+              if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(item)) {
+                p1 = RegExp.$1;
+                p2 = RegExp.$2;
+
+              Logger.log('>>'+p1+' '+p2);
+                if (p1==='') {
+                  dcount = p2.length;
+                } else {
+                  dcount = parseInt(p1,10);
+                }
+              }
+
+              Logger.log(dcount);
+              Logger.log(end);
               var darray = [];
-              for (var di = 0; di < dcount; di++) {
-                darray.push('\'');
+              if (dcount <= 0) {
+                darray.push('\'{' + dcount + '}');
+              } else {
+                for (var di = 0; di < dcount; di++) {
+                  darray.push('\'');
+                }
               }
               var argvend = ')';
               if (item.indexOf(',' + argvend) !== -1) {
@@ -135,12 +165,40 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
               }
             } else if (func.indexOf('left') === 0) {
               // -len("$2")
+              // if(""="$4",N("__param___")+len("$2")
+              var p1 = 0;
+              var p2 = 0;
+              var dcount = 0;
+              if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(item)) {
+                p1 = RegExp.$1;
+                p2 = RegExp.$2;
+
+              Logger.log('>>'+p1+' '+p2);
+                if (p1==='') {
+                  dcount = p2.length;
+                } else {
+                  dcount = parseInt(p1,10);
+                }
+              }
+              Logger.log(end);
+              /*
               end = end.slice('-len("'.length);
               var endnum = end.indexOf('"');
-              var dcount = -parseInt(num, 10) + endnum;
+              num = parseInt(num, 10);
+            
+              if (num === 0) {
+                dcount = endnum;
+              } else {
+                dcount = num;
+              }
+              */
               var darray = [];
-              for (var di = 0; di < dcount; di++) {
-                darray.push('`');
+              if (dcount <= 0) {
+                darray.push('`{' + dcount + '}');
+              } else {
+                for (var di = 0; di < dcount; di++) {
+                  darray.push('`');
+                }
               }
               var argvend = ')';
               if (item.indexOf(',' + argvend) !== -1) {
@@ -518,9 +576,9 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               if (f.indexOf('`') > -1) {
                 sideBad = 1;
 
-                var left = '$4.0+if("$4"="",len("$2"),0)';
+                var left = '$4.0+if(""="$4",N("__param___")+len("$2"),0)';
                 var addr = 'regexreplace(address(row($1),column($1)-(' + left + '),4),"[0-9]+","")';
-                var itemLabel = 'indirect('+addr+'&":"&'+addr+')';
+                var itemLabel = 'indirect(' + addr + '&":"&' + addr + ')';
                 var rep = 'iferror(index(if("$1"="$1",' + itemLabel + ',$1),$4.0+N("__left__")-len("$2")+N("__prev__")-1-($4.0)+len("$2")+row()+N("__formula__")),"")';
 
                 f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)({([0-9--]+)}|([0-9--]*))/g, rep);
@@ -529,12 +587,12 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             sideBadArray.push(sideBad);
             // +N("__formula__")),"")
             if (f.indexOf('\'') > -1) {
-              var prev = 'if("$4"="",len("$2"),1)';
+              var prev = 'if(""="$4",N("__param___")+len("$2"),1)';
               var collabel = getColumnLabel(wi + 1);
               var itemLabel = collabel + ':' + collabel;
               // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),"") 
               // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),"")
-              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$4.0+N("__prev__")-('+prev+')+row()+N("__formula__")),"")';
+              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$4.0+N("__prev__")-(' + prev + ')+row()+N("__formula__")),"")';
 
               f = f.replace(/([^=\|`'"\$;,{&\s\+\-\*\/\(]*)('+)({([0-9]+)}|([0-9]*))/g, rep);
             }
