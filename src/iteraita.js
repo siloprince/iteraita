@@ -116,36 +116,18 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
             var func = RegExp.$5;
             var end = RegExp.$6;
             if (func.indexOf('prev') === 0) {
-              // -len("$2")
-              /*
-              end = end.slice('-len("'.length);
-              var endnum = end.indexOf('"');
-              var dcount = -parseInt(num, 10) + endnum;
-              num = parseInt(num, 10);
-              var dcount;
-              if (num === 0) {
-                dcount = endnum;
-              } else {
-                dcount = -num;
-              }
-              */
               var p1 = 0;
               var p2 = 0;
               var dcount = 0;
               if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(item)) {
                 p1 = RegExp.$1;
                 p2 = RegExp.$2;
-
-              Logger.log('>>'+p1+' '+p2);
                 if (p1==='') {
                   dcount = p2.length;
                 } else {
                   dcount = parseInt(p1,10);
                 }
               }
-
-              Logger.log(dcount);
-              Logger.log(end);
               var darray = [];
               if (dcount <= 0) {
                 darray.push('\'{' + dcount + '}');
@@ -172,26 +154,12 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
               if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(item)) {
                 p1 = RegExp.$1;
                 p2 = RegExp.$2;
-
-              Logger.log('>>'+p1+' '+p2);
                 if (p1==='') {
                   dcount = p2.length;
                 } else {
                   dcount = parseInt(p1,10);
                 }
               }
-              Logger.log(end);
-              /*
-              end = end.slice('-len("'.length);
-              var endnum = end.indexOf('"');
-              num = parseInt(num, 10);
-            
-              if (num === 0) {
-                dcount = endnum;
-              } else {
-                dcount = num;
-              }
-              */
               var darray = [];
               if (dcount <= 0) {
                 darray.push('`{' + dcount + '}');
