@@ -119,7 +119,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
               var p1 = 0;
               var p2 = 0;
               var dcount = 0;
-              if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(item)) {
+              if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(end)) {
                 p1 = RegExp.$1;
                 p2 = RegExp.$2;
                 if (p1==='') {
