@@ -861,9 +861,102 @@ function clear(spread, all) {
   }
   return "clear:" + all;
 }
+function draw(spread) {
+  var formatListRange = spread.getRangeByName('__formulaList__');
+  var sheet = formatListRange.getSheet();
+  var formulaValues = spread.getRangeByName('__formulaList__').getValues()[0];
+  var startColumn=0;
+  var endColumn=sheet.getMaxColumns();
+
+  for (var fi=0;fi<formulaValues.length;fi++) {
+    if (formulaValues[fi].toString().indexOf('$3+1-mod')!==-1) {
+      if (startColumn===0) {
+        startColumn = fi+1;
+      }
+    } else {
+      if (startColumn!==0) {
+        endColumn = fi;
+        break;
+      }
+    }
+  }
+  var frozenRows = sheet.getFrozenRows();
+  var maxRows = sheet.getMaxRows();
+  var ymax = maxRows-frozenRows;
+  var range = sheet.getRange(frozenRows+1, startColumn, ymax,(endColumn-startColumn+1));
+  var values = range.getValues();
+  var rects = [];
+  var grid=7;
+  var end=0;
+  var valcount=0;
+  for (var vi=0;vi<values[0].length;vi++) {
+    for (var vj=0;vj<values.length;vj++) {
+      if (values[vj][vi]) {
+        valcount++;
+        break;
+      }
+    }
+    if (valcount===0) {
+      for (var vj=0;vj<values.length;vj++) {
+         values[vj][vi]=values[vj][0];
+      }
+      end = vi;
+      vi--;
+      valcount=-100;
+    } else if (valcount<0) {
+      break;
+    } else {
+      valcount=0;
+    }
+  }
+  for (var vi=0;vi<end;vi++) {
+    for (var vj=0;vj<values.length;vj++) {
+      if (values[vj][vi]) {
+        var val = Math.round(parseFloat(values[vj][vi].toString()));
+        var val2 = Math.round(parseFloat(values[vj][vi+1].toString()));
+        Logger.log(val+' '+vj+' '+val2+' '+vi+' '+end);
+        if (vi<end-1) {
+          if (val && val2 && val>val2) {
+            //break;
+          } else {
+            rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+          }
+        } else {
+          if (val && val2 && val>val2) {
+            for (var vk=val2;vk<=val;vk++) {
+              rects.push('<rect opacity="1" fill="#ff0000" x="'+(vk*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+            }
+          }
+        }
+      }
+    }
+  }
+  var stroke;
+  var xmax = ymax*1.85;
+  for (var i=0;i<ymax+1;i++) {
+    stroke = "#aaaaaa";
+    if (i%10===0) {
+      stroke="#000000";
+    }
+    rects.push('<line x1="0" y1="'+(i*grid)+'" x2="'+(xmax*grid)+'" y2="'+(i*grid)+'" stroke="'+stroke+'" stroke-width="1"/>');
+  }
+  for (var j=0;j<xmax+1;j++) {
+    stroke = "#aaaaaa";
+    if (j%10===0) {
+      stroke="#000000";
+    }
+    rects.push('<line x1="'+(j*grid)+'" y1="0" x2="'+(j*grid)+'" y2="'+(ymax*grid)+'" stroke="'+stroke+'" stroke-width="1"/>');
+  }
+  var svg = '<svg width="1000" height="1000"><g transform="translate(0,0)"><g transform="scale(1,1)">'+rects.join('')+'</g></g></svg>';
+  var htmlOutput = HtmlService
+    .createHtmlOutput(svg)
+    .setWidth(1050)
+    .setHeight(1610);
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '方眼紙');
+}
 function onOpen(spread, ui, sidebar) {
   if (!sidebar) {
-    ui.createMenu('Iteraita').addItem('サイドバーを開く', 'openSidebar').addItem('リフレッシュ', 'refresh').addItem('リセット', 'reset').addToUi();
+    ui.createMenu('[れん卓]').addItem('方眼紙を開く','draw').addSeparator().addItem('リフレッシュ', 'refresh').addToUi();
     return;
   }
   var html = HtmlService.createHtmlOutputFromFile('Sidebar')
