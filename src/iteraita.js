@@ -5,7 +5,7 @@ function onEdit(ev) {
   var targetRange = ev.range;
   var sheet = targetRange.getSheet();
   var sheetName = sheet.getName();
-  if (sheetName!=='Sheet1') {
+  if (sheetName !== 'Sheet1') {
     return;
   }
   var spread = sheet.getParent();
@@ -125,10 +125,10 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
               if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(end)) {
                 p1 = RegExp.$1;
                 p2 = RegExp.$2;
-                if (p1==='') {
+                if (p1 === '') {
                   dcount = p2.length;
                 } else {
-                  dcount = parseInt(p1,10);
+                  dcount = parseInt(p1, 10);
                 }
               }
               var darray = [];
@@ -157,10 +157,10 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
               if (/if\(""="([0-9--]*)",N\("__param___"\)\+len\("([^"]+)"\)/.test(item)) {
                 p1 = RegExp.$1;
                 p2 = RegExp.$2;
-                if (p1==='') {
+                if (p1 === '') {
                   dcount = p2.length;
                 } else {
-                  dcount = parseInt(p1,10);
+                  dcount = parseInt(p1, 10);
                 }
               }
               var darray = [];
@@ -530,7 +530,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                       } else if (nextvalueflag === 1) {
                         condtmp += detailArray[di];
                       } else {
-                        if (di===detailArray.length-1) {
+                        if (di === detailArray.length - 1) {
                           nextvaluetmp += detailArray[di];
                         } else {
                           nextvaluetmp += detailArray[di] + '}';
