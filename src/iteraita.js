@@ -216,6 +216,30 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
         var ff = parts.join('');
         formulas[fi] = ff;
       }
+      // 
+      // =T("__EMPTY__")+N("__SIDE__")+T("__EMPTY__")+N("__SIDE__")+22+N("__SIDE__")+3
+      var sidesep = '+N("__SIDE__")+';
+      var inits=[];
+      if (formulas[fi].indexOf(sidesep) > -1) {
+        var farray = [];
+        var parts = formulas[fi].split(sidesep);
+        parts.pop();
+        parts.shift();
+        var nonempty=0;
+        for (var pi = 0; pi < parts.length; pi++) {
+          if (pi===0) {
+            farray.push(parts[pi]);
+          } else if (parts[pi] === 'T("__EMPTY__")') {
+            if (nonempty) {
+              inits.push('[]');
+            }
+          } else {
+            inits.push('[' + parts[pi] + ']');
+            nonempty=1;
+          }
+        }
+        formulas[fi] = farray.join('\n');
+      }
       // =iferror(iferror(N("__if__")+if(and( 自然数>10,isnumber(自然数)),N("__then__")+自然数  ,1/0)),N("__if__")+0/1),"")
       var ifsep = 'N("__if__")+if(and(';
       if (formulas[fi].indexOf(ifsep) > -1) {
@@ -239,18 +263,8 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
         }
         formulas[fi] = farray.join('\n');
       }
-      // 
-      // =T("__EMPTY__")+N("__SIDE__")+T("__EMPTY__")+N("__SIDE__")+22+N("__SIDE__")+3
-      var sidesep = '+N("__SIDE__")+';
-      if (formulas[fi].indexOf(sidesep) > -1) {
-        var farray = [];
-        var parts = formulas[fi].split(sidesep);
-        for (var pi = 0; pi < parts.length; pi++) {
-          if (parts[pi] !== 'T("__EMPTY__")') {
-            farray.push('[' + parts[pi] + ']');
-          }
-        }
-        formulas[fi] = farray.join('\n');
+      if (inits.length>0) {
+        formulas[fi] += '\n'+inits.join('\n');
       }
       // =iferror(T(N(to_text(if(isnumber(222),222,T(N("__@2__"))&222)))),"")
       if (formulas[fi].indexOf('T(N("__@') > -1) {
@@ -482,17 +496,25 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           var orgf = f;
           if (orgf.indexOf('[') > -1) {
             side = 1;
+            var form='';
             var splitArray = orgf.split(']');
             splitArray.pop();
             for (var si = 0; si < constval; si++) {
               var sj = splitArray.length - 1 - si;
               if (sj >= 0) {
+                if (sj===0) {
+                  form = splitArray[sj].slice(0,splitArray[sj].indexOf('[')).trim();
+                }
                 var val = splitArray[sj].slice(splitArray[sj].indexOf('[') + 1);
                 formulaArray.unshift(val.trim());
               } else {
                 formulaArray.unshift('');
               }
             }
+            if (form===''){
+              form = splitArray[0].slice(0,splitArray[0].indexOf('[')).trim();
+            }
+            formulaArray.unshift(form);
           } else {
             formulaArray.push(orgf);
           }
@@ -615,7 +637,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if("$3"="",1,0)+' + (maxRows) + '+N("__formula__")),1/0)';
               f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
             }
-            if (f === '') {
+            if (f.trim() === '') {
               f = 'T("__EMPTY__")';
             }
             convArray.push(f);
@@ -625,19 +647,22 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           var _height = dollerHeight;
           var _width = 1;
           // set to protocode
-          if (side) {
+          if (!side) {
+              sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
+          } else {
             var _widthcount = 1;
-            for (var ii = _col + 1; ii < itemNameList.length; ii++) {
+            // _col is +1 rigth neighbor
+            for (var ii = _col; ii < itemNameList.length; ii++) {
               if (itemNameList[ii].trim() !== "") {
                 break;
               }
               _widthcount++;
             }
-            var store = convArray.join('+N("__SIDE__")+');
+            var store = '+N("__SIDE__")+'+convArray.join('+N("__SIDE__")+')+'+N("__SIDE__")+0';
             sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + store + '))),"")');
-            for (var ci = 0; ci < constval; ci++) {
+            for (var ci = 1; ci <= constval; ci++) {
               if (ci >= formulaArray.length) {
-                sheet.getRange(row + 3 + ci, _col + 1, 1, _widthcount).setValue('');
+                sheet.getRange(row + 3 + (ci-1), _col + 1, 1, _widthcount).setValue('');
               } else {
                 orgf = formulaArray[ci];
                 f = convArray[ci];
@@ -645,7 +670,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                 var vval = '';
                 if (sideBadArray[ci] === 0) {
                   if (f.indexOf('row()') > -1) {
-                    f = f.replace(/row\(\)/g, 'column()+(' + (_row - _col - 1) + ')');
+                    f = f.replace(/row\(\)/g, 'column()+(' + (_row - _col) + ')');
                     if (orgf.indexOf(')') === orgf.length - 1) {
                       if (
                         orgf.indexOf('pack(') > -1 ||
@@ -683,18 +708,17 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                         if (orgf.indexOf(' ') === -1 && orgf.indexOf('/') === -1
                           && orgf.indexOf('+') === -1 && orgf.indexOf('-') === -1
                           && orgf.indexOf('*') === -1) {
-                          vval = 'index(' + f + ',column()+(' + (_row - _col - 1) + '))';
+                          vval = 'index(' + f + ',column()+(' + (_row - _col) + '))';
                         }
                       }
                     }
                   }
                 }
               }
-              sheet.getRange(row + 3 + ci, _col + 1, 1, _widthcount).setFormula(vval);
+              sheet.getRange(row + 3 + (ci-1), _col, 1, _widthcount).setFormula(vval);
             }
-          } else {
+          }
             f = convArray[0];
-            sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
             if (f.indexOf('N("__prev__")') > -1) {
               // remove errors on initals
               var errors = sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).getValues();
@@ -727,7 +751,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               var ff = 'iferror('+f+',"")';
               sheet.getRange(_row, _col, _height, _width).setFormula(ff);
             }
-          }
+          
         }
       }
     }
