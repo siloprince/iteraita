@@ -910,16 +910,21 @@ function draw(spread) {
     }
   }
   for (var vi=0;vi<end;vi++) {
-    for (var vj=0;vj<values.length;vj++) {
+    for (var vj=1;vj<values.length;vj++) {
       if (values[vj][vi]) {
         var val = Math.round(parseFloat(values[vj][vi].toString()));
         var val2 = Math.round(parseFloat(values[vj][vi+1].toString()));
+        var val3 = Math.round(parseFloat(values[vj-1][vi].toString()));
         Logger.log(val+' '+vj+' '+val2+' '+vi+' '+end);
         if (vi<end-1) {
           if (val && val2 && val>val2) {
-            //break;
+            //skip;
           } else {
-            rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+            if (vi===end-2 && val && !val2 && !val3) {
+                //skip 
+            } else {
+              rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+            }
           }
         } else {
           if (val && val2 && val>val2) {
