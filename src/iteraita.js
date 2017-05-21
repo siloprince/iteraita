@@ -943,23 +943,23 @@ function draw(spread) {
         var val3;
         if (vj-1>=0) { val3 = values[vj-1][vi];} // up
         var val4;
-        if (vj+1<=end) { val4 = values[vj+1][vi];} // down
+        if (vj+1<values.length) { val4 = values[vj+1][vi];} // down
         var val5;
         if (vj-1>=0 && vi-1>=0) { val5 = values[vj-1][vi-1];} // up prev 5,9
         var val6;
-        if (vj+1<=end && vi+1<=end) { val6 = values[vj+1][vi+1];} // down next 6,10,
+        if (vj+1<values.length && vi+1<=end) { val6 = values[vj+1][vi+1];} // down next 6,10,
         var val7;
         if (vj-1>=0 && vi+1<=end) { val7 = values[vj-1][vi+1];} // up next 7,11
         var val8;
-        if (vj+1<=end && vi-1>=0) { val8 = values[vj+1][vi-1];} // down prev  8,12
+        if (vj+1<values.length && vi-1>=0) { val8 = values[vj+1][vi-1];} // down prev  8,12
         var val9;
         if (vj-2>=0 && vi-1>=0) { val9 = values[vj-2][vi-1];} // upup prev 
         var val10;
-        if (vj+2<=end && vi+1<=end) { val10 = values[vj+2][vi+1];} // downdown next
+        if (vj+2<values.length && vi+1<=end) { val10 = values[vj+2][vi+1];} // downdown next
         var val11;
         if (vj-2>=0 && vi+1<=end) { val11 = values[vj-2][vi+1];} // upup next
         var val12;
-        if (vj+2<=end && vi-1>=0) { val12 = values[vj+2][vi-1];} // downdown prev
+        if (vj+2<values.length && vi-1>=0) { val12 = values[vj+2][vi-1];} // downdown prev
          if (valcount[vi]===1 ) {
           if (val2) {
             var start;
@@ -991,12 +991,16 @@ function draw(spread) {
               }
             }
             for (var vk=start;vk<max;vk++) {
-              rects.push('<rect opacity="1" fill="#ff0000" x="'+(vk*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+              rects.push('<rect opacity="1" fill="#ff0000" x="'+(vk*grid)+'" y="'+((vj+1)*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
             }
           }
         } else {
           var skip=false;
-          if (val2 && !val3) {
+          if (valcount[vi+1]===1 && val4 && !val3 && val6) {
+              skip=true;
+          } else if (valcount[vi-1]===1 && val3 && !val4 && val5) {
+              skip=true;
+          } else if (val2 && !val3) {
             val2 = Math.round(parseFloat(val2.toString()));
             if( val >= val2) {
               skip=true;
@@ -1006,15 +1010,9 @@ function draw(spread) {
             if (val >= val1) {
               skip=true;
             }
-          } else {
-            if (valcount[vi+1]===1 && val4 && !val3 && val6) {
-              skip=true;
-            } else if (valcount[vi-1]===1 && val3 && !val4 && val5) {
-              skip=true;
-            }
           }
           if(!skip) {
-                rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+                rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+((vj+1)*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
           }
         }
       }
