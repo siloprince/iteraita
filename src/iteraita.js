@@ -95,7 +95,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
     var tn_header = 'iferror(T(N(to_text(';
     var tn_footer = '))),"")';
     for (var fi = 0; fi < formulas.length; fi++) {
-      var raw = formulas[fi];
+      var raw = formulas[fi];   
       if (raw.length === 0 ) {
         continue;
       }
@@ -115,7 +115,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
       if (raw.indexOf('=') === 0) {
         formulas[fi] = raw.slice(1);
       }
-      if (formulas[fi].indexOf('iferror(T(N(to_text(') === 0) {
+      if (formulas[fi].indexOf(tn_header) === 0) {
         formulas[fi] = formulas[fi].slice(tn_header.length, -tn_footer.length);
       }
       if (formulas[fi].indexOf('+N("__formula__")),1/0)') > -1) {
@@ -563,7 +563,6 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                       if (detailArray[di].trim().lastIndexOf('{') === -1) {
                         nextvalueflag++;
                       }
-                      Logger.log(detailArray[di]);
                       if (nextvalueflag === 0) {
                         condtmp += detailArray[di] + '}';
                       } else if (nextvalueflag === 1) {
@@ -597,19 +596,19 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                 var left = '$4.0+if(""="$4",N("__param___")+len("$2"),0)';
                 var addr = 'regexreplace(address(row($1),column($1)-(' + left + '),4),"[0-9]+","")';
                 var itemLabel = 'indirect(' + addr + '&":"&' + addr + ')';
-                var rep = 'iferror(index(if("$1"="$1",' + itemLabel + ',$1),$4.0+N("__left__")-len("$2")+N("__prev__")-1-($4.0)+len("$2")+row()+N("__formula__")),"")';
+                var rep = 'iferror(index(if("$1"="$1",' + itemLabel + ',$1),$4.0+N("__left__")-len("$2")+N("__prev__")-1-($4.0)+len("$2")+row()+N("__formula__")),1/0)';
 
                 f = f.replace(/([^=<>\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)({([0-9--]+)}|([0-9--]*))/g, rep);
               }
             }
             sideBadArray.push(sideBad);
-            // +N("__formula__")),"")
+            // +N("__formula__")),1/0)
             if (f.indexOf('\'') > -1) {
               var prev = 'if(""="$4",N("__param___")+len("$2"),1)';
               var collabel = getColumnLabel(wi + 1);
               var itemLabel = collabel + ':' + collabel;
-              // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),"") 
-              // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),"")
+              // =iferror(index(電卓A,-1+N("__prev__")+row()+N("__formula__")),1/0) 
+              // =iferror(index(電卓,-2+N("__prev__")+row()+N("__formula__")),1/0)
               var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$4.0+N("__prev__")-(' + prev + ')+row()+N("__formula__")),1/0)';
 
               f = f.replace(/([^=<>\|`'"\$;,{&\s\+\-\*\/\(]*)('+)({([0-9]+)}|([0-9]*))/g, rep);
@@ -932,7 +931,6 @@ function draw(spread) {
         var val = Math.round(parseFloat(values[vj][vi].toString()));
         var val2 = Math.round(parseFloat(values[vj][vi+1].toString()));
         var val3 = Math.round(parseFloat(values[vj-1][vi].toString()));
-        Logger.log(val+' '+vj+' '+val2+' '+vi+' '+end);
         if (vi<end-1) {
           if (val && val2 && val>val2) {
             //skip;
