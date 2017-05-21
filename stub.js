@@ -31,3 +31,11 @@ function refresh() {
   var spread = SpreadsheetApp.getActive();
   return iteraita.refresh(spread);
 }
+function draw() {
+  var spread = SpreadsheetApp.getActive();
+  return iteraita.draw(spread);
+}
+function importRange() {
+  var spread = SpreadsheetApp.getActive();
+  return iteraita.importRange(spread);
+}
