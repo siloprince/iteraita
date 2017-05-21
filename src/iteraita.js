@@ -80,22 +80,36 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
     }
     // update entire names
     updateRangeNames(itemNameList, itemNameListRange, namedRanges);
-    recoverFromFormulas(formulaListRange);
+    recoverFromFormulas(formulaListRange,itemNameList);
   }
   return;
 
-  function recoverFromFormulas(range) {
+  function recoverFromFormulas(range,itemNameList) {
 
     var sheet = range.getSheet();
     var frozenRows = sheet.getFrozenRows();
-    var valRow = range.getRow() + 1;
+    var formulaRow = range.getRow();    
+    var valRow = formulaRow + 1;
     var width = range.getWidth();
     var formulas = sheet.getRange(valRow, 1, 1, width).getFormulas()[0];
     var tn_header = 'iferror(T(N(to_text(';
     var tn_footer = '))),"")';
     for (var fi = 0; fi < formulas.length; fi++) {
       var raw = formulas[fi];
-      if (raw.length === 0) {
+      if (raw.length === 0 ) {
+        continue;
+      }
+      if (raw.indexOf('N("__IMPORTRANGE__")')!==-1) {
+        if (/T\(N\("__IMPORTRANGE__"\)\)&T\(N\("([^"]+)"\)\)/.test(raw)) {
+          var filename = RegExp.$1;
+          var itemName = itemNameList[fi];
+          formulas[fi]= 'import('+filename+')';
+          if (updateImport(spread,itemName,filename)) {
+            sheet.getRange(formulaRow+3,fi+1).setFormula('offset(_'+itemName+','+((formulaRow+3)-1)+',0)');
+          } else {
+            sheet.getRange(formulaRow+3,fi+1).setFormula('');
+          }
+        }
         continue;
       }
       if (raw.indexOf('=') === 0) {
@@ -484,9 +498,12 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       }
       if (!input) {
         if (f.length === 0) {
-          sheet.getRange(row + 1, wi + 1, 1, 1).setFormula(f);
+          sheet.getRange(row + 1, wi + 1, 1, 1).setFormula('');
           sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
-
+        } else if( f.indexOf('import(')>=0) {
+          var filename = f.slice(f.indexOf('(')+1, -f.length+f.indexOf(')')).trim();
+          sheet.getRange(row + 1, wi + 1, 1, 1).setFormula('T(N("__IMPORTRANGE__"))&T(N("'+filename+'"))');
+          sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
         } else {
           var side = 0;
           var constval = 4;
@@ -959,9 +976,145 @@ function draw(spread) {
     .setHeight(1610);
   SpreadsheetApp.getUi().showModalDialog(htmlOutput, '方眼紙');
 }
+function importRange(spread){
+  var namedRanges = spread.getNamedRanges();
+  var itemNameRange = spread.getRange('__itemNameList__');
+  var itemNameList = itemNameRange.getValues()[0];
+  var formulaRange = spread.getRange('__formulaList__');
+  var formulaList = formulaRange.getValues()[0];
+  var formulaRow = formulaRange.getRow();
+  var sheet = formulaRange.getSheet();
+  var maxRows = sheet.getMaxRows();
+  var nameIdHash={};
+  var importHash = {};
+  var importWidth=0;
+  var importSheet = spread.getSheetByName("_import");
+  if (!importSheet) {
+    importSheet = spread.insertSheet('_import',2);
+    spread.setActiveSheet(sheet);
+  } else {
+    var importFormulas = importSheet.getRange("1:1").getFormulas()[0];
+    for (var ii=0;ii<importFormulas.length;ii++){
+      if(/importrange\("([^"]+)","([^"]+)"&T\(N\("([^"]+)"\)\)\)/.test(importFormulas[ii])) {
+        var fileId = RegExp.$1;
+        var itemName = RegExp.$2;
+        var filename = RegExp.$3;
+        var range;
+        itemName = itemName.trim();
+        importWidth=ii+1;
+        importHash[itemName] = { fileId: fileId, row: importWidth, filename: filename };
+      }
+    }
+    for (var ni=0;ni<namedRanges.length;ni++) {
+      var rangeName = namedRanges[ni].getName();
+      if (rangeName.indexOf('_')===0 && rangeName.indexOf('__')===-1) {
+        var itemName = rangeName.slice(1);
+        if (itemName in importHash) {
+          importHash[itemName].namedRange = namedRanges[ni];
+        }
+      }
+    }
+  }
+  {
+    var importMax = importSheet.getMaxRows();
+    var tobedel = importMax - maxRows;
+    if (tobedel>0) {
+      importSheet.deleteRows(maxRows+1,importMax-maxRows);
+    }    
+  }
+  for(var fi=0;fi<formulaList.length;fi++){
+    if(formulaList[fi].toString().trim().indexOf('import(')===0 &&
+      itemNameList[fi].toString().trim().length > 0
+    ) {
+      if(/import\(([\s\S]+)\)/i.test(formulaList[fi])) {
+        var filename = RegExp.$1;
+        filename = filename.trim();
+        var fileid;
+        if (filename in nameIdHash) {
+          fileid = nameIdHash[filename];
+        } else {
+          var fileIter = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents().next().getFilesByName(filename);
+          if (fileIter && fileIter.hasNext()) {
+            fileId = fileIter.next().getId();
+            nameIdHash[filename] = fileId;
+          }
+        }
+        var itemName = itemNameList[fi].toString().trim();
+        var importData;
+        var importFormula = 'importrange("'+fileId+'","'+itemName+'"&T(N("'+filename+'")) )';
+        if (itemName in importHash) {
+          importData = importHash[itemName];
+          if (importData.fileId !== fileId) {
+            var range = importHash[itemName].namedRange.getRange();
+            var cell =  importSheet.getRange(1,range.getWidth());
+            cell.setFormula(importFormula);
+          }
+        } else {
+            var cell = importSheet.getRange(1,importWidth+1);
+            cell.setFormula(importFormula);
+            var collab = getColumnLabel(importWidth+1);
+            importWidth++;
+            var range = importSheet.getRange(collab+':'+collab);
+            spread.setNamedRange('_'+itemName, range);
+        }
+        sheet.getRange(formulaRow+1,fi+1).setFormula('T(N(offset(_'+itemName+',0,0,1,1)))&T(N("__IMPORTRANGE__"))&T(N("'+filename+'"))');
+        sheet.getRange(formulaRow+3,fi+1,maxRows-(formulaRow+3)+1,1).setValue('');
+        sheet.getRange(formulaRow+3,fi+1).setFormula('offset(_'+itemName+','+((formulaRow+3)-1)+',0)');
+      }
+    }
+  }
+}
+function updateImport(spread,_itemName,_filename){
+
+  var importSheet = spread.getSheetByName("_import");
+  if (!importSheet) {
+    return false;
+  }
+
+    var importFormulas = importSheet.getRange("1:1").getFormulas()[0];
+    var _fileId='';
+    var importWidth=0;
+    for (var ii=0;ii<importFormulas.length;ii++){
+      if (importFormulas[ii].replace('=').length===0) {
+        break;
+      }
+      importWidth = ii+1;
+      // importrange("fileid","itemName"&T(N("filename"))
+      if(importFormulas[ii].indexOf('importrange')>-1 && 
+         importFormulas[ii].indexOf('"&T(N("')>-1
+       ) {
+        var filename = importFormulas[ii].slice(
+          importFormulas[ii].indexOf('"&T(N("')+'"&T(N("'.length,
+          -importFormulas[ii].length+importFormulas[ii].indexOf('"))')
+        );
+        var fileId = importFormulas[ii].slice(
+          importFormulas[ii].indexOf('importrange("')+'importrange("'.length,
+          -importFormulas[ii].length+importFormulas[ii].indexOf('","')
+        );
+        var itemName = importFormulas[ii].slice(
+          importFormulas[ii].indexOf('","')+'","'.length,
+          -importFormulas[ii].length+importFormulas[ii].indexOf('"&T(N("')
+        );
+        if (_filename===filename) {
+          _fileId = fileId;
+        }
+        if (_itemName===itemName && _filename===filename) {
+          return true;
+        }
+      }
+    }
+    if (_fileId===''){
+      return false;
+    }
+        var importFormula = 'importrange("'+_fileId+'","'+_itemName+'"&T(N("'+_filename+'")) )';
+        importSheet.getRange(1,importWidth+1).setFormula(importFormula);
+        var collab = getColumnLabel(importWidth+1);
+        spread.setNamedRange('_'+_itemName,importSheet.getRange(collab+':'+collab));
+        return true;
+}
 function onOpen(spread, ui, sidebar) {
   if (!sidebar) {
-    ui.createMenu('[れん卓]').addItem('方眼紙を開く','draw').addSeparator().addItem('リフレッシュ', 'refresh').addToUi();
+    ui.createMenu('[れん卓]').addItem('方眼紙を開く','draw').addSeparator().addItem('インポート','importRange').addItem('リフレッシュ', 'refresh').addToUi();
     return;
   }
   var html = HtmlService.createHtmlOutputFromFile('Sidebar')
