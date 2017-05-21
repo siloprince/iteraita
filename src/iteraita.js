@@ -933,22 +933,34 @@ function draw(spread) {
     values[vj][end]=values[vj][0];
   }
   for (var vi=0;vi<end;vi++) {
-    for (var vj=1;vj<values.length-1;vj++) { // start-1 , end-1 for up and down respectively
+    for (var vj=0;vj<values.length;vj++) {
       if (values[vj][vi] ) {
         var val = Math.round(parseFloat(values[vj][vi].toString())); // this      
-        var val1 = values[vj][vi-1]; //prev
-        var val2 = values[vj][vi+1]; //next
-        var val3 = values[vj-1][vi]; // up
-        var val4 = values[vj+1][vi]; // down
-        var val5 = values[vj-1][vi-1]; // up prev 5,9
-        var val6 = values[vj+1][vi+1]; // down next 6,10,
-        var val7 = values[vj-1][vi+1]; // up next 7,11
-        var val8 = values[vj+1][vi-1]; // down prev  8,12
-        var val9 = values[vj-2][vi-1]; // upup prev 
-        var val10= values[vj+2][vi+1]; // downdown next
-        var val11= values[vj-2][vi+1]; // upup next
-        var val12= values[vj+2][vi-1]; // downdown prev
-         if (valcount[vi]===1) {
+        var val1;
+        if (vi-1>=0) { val1 = values[vj][vi-1];} //prev
+        var val2;
+        if (vi+1<=end) { val2 = values[vj][vi+1]; } //next
+        var val3;
+        if (vj-1>=0) { val3 = values[vj-1][vi];} // up
+        var val4;
+        if (vj+1<=end) { val4 = values[vj+1][vi];} // down
+        var val5;
+        if (vj-1>=0 && vi-1>=0) { val5 = values[vj-1][vi-1];} // up prev 5,9
+        var val6;
+        if (vj+1<=end && vi+1<=end) { val6 = values[vj+1][vi+1];} // down next 6,10,
+        var val7;
+        if (vj-1>=0 && vi+1<=end) { val7 = values[vj-1][vi+1];} // up next 7,11
+        var val8;
+        if (vj+1<=end && vi-1>=0) { val8 = values[vj+1][vi-1];} // down prev  8,12
+        var val9;
+        if (vj-2>=0 && vi-1>=0) { val9 = values[vj-2][vi-1];} // upup prev 
+        var val10;
+        if (vj+2<=end && vi+1<=end) { val10 = values[vj+2][vi+1];} // downdown next
+        var val11;
+        if (vj-2>=0 && vi+1<=end) { val11 = values[vj-2][vi+1];} // upup next
+        var val12;
+        if (vj+2<=end && vi-1>=0) { val12 = values[vj+2][vi-1];} // downdown prev
+         if (valcount[vi]===1 ) {
           if (val2) {
             var start;
             var max;
@@ -981,7 +993,6 @@ function draw(spread) {
             for (var vk=start;vk<max;vk++) {
               rects.push('<rect opacity="1" fill="#ff0000" x="'+(vk*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
             }
-            
           }
         } else {
           var skip=false;
