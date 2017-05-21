@@ -95,7 +95,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
     var tn_header = 'iferror(T(N(to_text(';
     var tn_footer = '))),"")';
     for (var fi = 0; fi < formulas.length; fi++) {
-      var raw = formulas[fi];   
+      var raw = formulas[fi];
       if (raw.length === 0 ) {
         continue;
       }
@@ -896,6 +896,12 @@ function draw(spread) {
       }
     }
   }
+  if (startColumn===0) {
+    return;
+  }
+  if ((endColumn-startColumn+1)<=0) {
+    return;
+  }
   var frozenRows = sheet.getFrozenRows();
   var maxRows = sheet.getMaxRows();
   var ymax = maxRows-frozenRows;
@@ -904,48 +910,100 @@ function draw(spread) {
   var rects = [];
   var grid=7;
   var end=0;
-  var valcount=0;
+  var valcount=[];
   for (var vi=0;vi<values[0].length;vi++) {
+    valcount[vi]=0;
     for (var vj=0;vj<values.length;vj++) {
       if (values[vj][vi]) {
-        valcount++;
-        break;
+        valcount[vi]++;
+        if (valcount[vi]>1) {
+          break;
+        }
       }
     }
-    if (valcount===0) {
-      for (var vj=0;vj<values.length;vj++) {
-         values[vj][vi]=values[vj][0];
-      }
+    if (valcount[vi]===0) {
       end = vi;
-      vi--;
-      valcount=-100;
-    } else if (valcount<0) {
       break;
-    } else {
-      valcount=0;
     }
   }
+  if (end===0) {
+    return;
+  }
+  for (var vj=0;vj<values.length;vj++) {
+    values[vj][end]=values[vj][0];
+  }
   for (var vi=0;vi<end;vi++) {
-    for (var vj=1;vj<values.length;vj++) {
-      if (values[vj][vi]) {
-        var val = Math.round(parseFloat(values[vj][vi].toString()));
-        var val2 = Math.round(parseFloat(values[vj][vi+1].toString()));
-        var val3 = Math.round(parseFloat(values[vj-1][vi].toString()));
-        if (vi<end-1) {
-          if (val && val2 && val>val2) {
-            //skip;
-          } else {
-            if (vi===end-2 && val && !val2 && !val3) {
-                //skip 
+    for (var vj=1;vj<values.length-1;vj++) { // start-1 , end-1 for up and down respectively
+      if (values[vj][vi] ) {
+        var val = Math.round(parseFloat(values[vj][vi].toString())); // this      
+        var val1 = values[vj][vi-1]; //prev
+        var val2 = values[vj][vi+1]; //next
+        var val3 = values[vj-1][vi]; // up
+        var val4 = values[vj+1][vi]; // down
+        var val5 = values[vj-1][vi-1]; // up prev 5,9
+        var val6 = values[vj+1][vi+1]; // down next 6,10,
+        var val7 = values[vj-1][vi+1]; // up next 7,11
+        var val8 = values[vj+1][vi-1]; // down prev  8,12
+        var val9 = values[vj-2][vi-1]; // upup prev 
+        var val10= values[vj+2][vi+1]; // downdown next
+        var val11= values[vj-2][vi+1]; // upup next
+        var val12= values[vj+2][vi-1]; // downdown prev
+         if (valcount[vi]===1) {
+          if (val2) {
+            var start;
+            var max;
+            val2 = Math.round(parseFloat(val2.toString()));
+            if (val2<val) {
+              start=val2;
+              if (val1) {
+                val1 = Math.round(parseFloat(val1.toString()));
+                if (val1<val) {
+                  max = val;
+                } else {
+                  max = val+1;
+                }
+              } else {
+                max = val+1;
+              }
             } else {
-              rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+              max=val2+1;
+              if (val1) {
+                val1 = Math.round(parseFloat(val1.toString()));
+                if (val1<val) {
+                  start = val;
+                } else {
+                  start = val+1;
+                }
+              } else {
+                start = val+1;
+              }
             }
-          }
-        } else {
-          if (val && val2 && val>val2) {
-            for (var vk=val2;vk<=val;vk++) {
+            for (var vk=start;vk<max;vk++) {
               rects.push('<rect opacity="1" fill="#ff0000" x="'+(vk*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
             }
+            
+          }
+        } else {
+          var skip=false;
+          if (val2 && !val3) {
+            val2 = Math.round(parseFloat(val2.toString()));
+            if( val >= val2) {
+              skip=true;
+            }
+          } else if (val1 && !val4) {
+            val1 = Math.round(parseFloat(val1.toString()));
+            if (val >= val1) {
+              skip=true;
+            }
+          } else {
+            if (valcount[vi+1]===1 && val4 && !val3 && val6) {
+              skip=true;
+            } else if (valcount[vi-1]===1 && val3 && !val4 && val5) {
+              skip=true;
+            }
+          }
+          if(!skip) {
+                rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+(vj*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
           }
         }
       }
