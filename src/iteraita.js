@@ -1098,11 +1098,19 @@ function importRange(spread){
         if (filename in nameIdHash) {
           fileid = nameIdHash[filename];
         } else {
-          var fileIter = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents().next().getFilesByName(filename);
+          var parents = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents();
+          var fileIter;
+          if (parents.hasNext()){
+            fileIter = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents().next().getFilesByName(filename);
+          }
           if (fileIter && fileIter.hasNext()) {
             fileId = fileIter.next().getId();
             nameIdHash[filename] = fileId;
           }
+        }
+        if(!fileId){
+          Logger.log('parent not found, please open from folder or add to my drive');
+          continue;
         }
         var itemName = itemNameList[fi].toString().trim();
         var importData;
