@@ -443,11 +443,86 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     updateFormulas(formulaList, formulaListRange, startw, endw, itemNameList);
   }
   return;
-
   function convertFormula(str, valRow) {
     if (str.length === 0) {
       return '';
     } else {
+      // zen to han
+      for (var si=0;si<str.length;si++) {
+        var code = str.charCodeAt(si);
+        if (code==='　'.charCodeAt(0)) {
+          str[si]=' ';
+        } else if (code==='＋'.charCodeAt(0)) {
+          str[si]='+';
+        } else if (code==='＊'.charCodeAt(0)) {
+          str[si]='*';
+        } else if (code==='’'.charCodeAt(0)) {
+          str[si]='\'';
+        } else if (code==='｀'.charCodeAt(0)) {
+          str[si]='`';
+        } else if (code==='"'.charCodeAt(0)) {
+          str[si]='"';
+        } else if (code==='.'.charCodeAt(0)) {
+          str[si]='.';
+        } else if (code==='，'.charCodeAt(0)) {
+          str[si]=',';
+        } else if (code==='（'.charCodeAt(0)) {
+          str[si]='(';
+        } else if (code==='）'.charCodeAt(0)) {
+          str[si]=')';
+        } else if (code==='＜'.charCodeAt(0)) {
+          str[si]='<';
+        } else if (code==='＝'.charCodeAt(0)) {
+          str[si]='=';
+        } else if (code==='＞'.charCodeAt(0)) {
+          str[si]='>';
+        } else if (code==='｛'.charCodeAt(0)) {
+          str[si]='{';
+        } else if (code==='｝'.charCodeAt(0)) {
+          str[si]='}';
+        } else if (code==='｜'.charCodeAt(0)) {
+          str[si]='|';
+        } else if (code==='？'.charCodeAt(0)) {
+          str[si]='?';
+        } else if (code==='＄'.charCodeAt(0)) {
+          str[si]='$';
+        } else if (code==='＆'.charCodeAt(0)) {
+          str[si]='&';
+        } else if (code==='％'.charCodeAt(0)) {
+          str[si]='%';
+        } else if (code==='＃'.charCodeAt(0)) {
+          str[si]='#';
+        } else if (code==='！'.charCodeAt(0)) {
+          str[si]='!';
+        } else if (code==='＾'.charCodeAt(0)) {
+          str[si]='^';
+        } else if (code==='＠'.charCodeAt(0)) {
+          str[si]='@';
+        } else if (code===';'.charCodeAt(0)) {
+          str[si]=';';
+        } else if (code==='：'.charCodeAt(0)) {
+          str[si]=':';
+        }
+      }
+      // double quote to single quote
+      // zen - to han - 
+      var strArray=[];
+      if(str.indexOf('"')>-1 || str.index('ー')>-1){
+        var lastcode=0;
+        var code=0;
+        for(var si=0;si<str.length;si++){
+          lastcode = code;
+          code = str.charCodeAt(si);
+          if (code==='"'.charCodeAt(0)){
+            strArray.push('\'\'');
+          } else if (code==='"'.charCodeAt(0)){
+            if (lastcode<128) {
+              strArray.push('-');
+            }
+          }
+        }
+        str = strArray.join('');
+      }
       var timeout = 0;
       if (/^@(@|[0-9\.]+)\s+/.test(str)) {
         timeout = RegExp.$1;
