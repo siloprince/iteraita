@@ -15,6 +15,7 @@ function onEdit(ev) {
   var targetWidth = targetRange.getWidth();
   var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
   var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
+  processSingleEmptyItemName(spread, sheet, ev, targetRow, targetColumn, itemNameListRange,formulaListRange);
   processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRange, formulaListRange);
   processSingleEmptyFormula(spread, sheet, ev, targetRow, targetColumn, formulaListRange);
   processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth, itemNameListRange, formulaListRange);
@@ -22,6 +23,19 @@ function onEdit(ev) {
 }
 function getObjectType(object) {
   return Object.prototype.toString.call(object).replace(/\[object (\w+)\]$/, '$1');
+}
+
+function processSingleEmptyItemName(spread, sheet, ev, targetRow, targetColumn, itemNameListRange,formulaListRange) {
+  // if onEdit for multiple cell ev.value = {}, ev.oldValue = undefined
+  // if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
+  //                           ev.value = "x", ev.oldValue = undefined if chagned from "" to "x"
+  //Logger.log(JSON.stringify(ev.value)+':'+JSON.stringify(ev.oldValue));
+  if (getObjectType(ev.value) === 'Object' && getObjectType(ev.oldValue) === 'String') {
+    if (targetRow === itemNameListRange.getRow()) {
+      var formulaColumn = formulaListRange.getColumn();
+      processFormulaList(spread, sheet, targetRow, 1, formulaColumn, 1, itemNameListRange, formulaListRange);
+    }
+  }
 }
 function processSingleEmptyFormula(spread, sheet, ev, targetRow, targetColumn, formulaListRange) {
   // if onEdit for multiple cell ev.value = {}, ev.oldValue = undefined
@@ -1186,11 +1200,23 @@ function importRange(spread){
         if (filename in nameIdHash) {
           fileid = nameIdHash[filename];
         } else {
+<<<<<<< HEAD
           var fileIter = arentFolder.getFilesByName(filename);
+=======
+          var parents = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents();
+          var fileIter;
+          if (parents.hasNext()){
+            fileIter = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents().next().getFilesByName(filename);
+          }
+>>>>>>> d08b3564daea1ca5e793dd2584c427ef32d52b0c
           if (fileIter && fileIter.hasNext()) {
             fileId = fileIter.next().getId();
             nameIdHash[filename] = fileId;
           }
+        }
+        if(!fileId){
+          Logger.log('parent not found, please open from folder or add to my drive');
+          continue;
         }
         var itemName = itemNameList[fi].toString().trim();
         var importData;
