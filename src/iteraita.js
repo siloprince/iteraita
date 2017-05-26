@@ -1200,15 +1200,7 @@ function importRange(spread){
         if (filename in nameIdHash) {
           fileid = nameIdHash[filename];
         } else {
-<<<<<<< HEAD
-          var fileIter = arentFolder.getFilesByName(filename);
-=======
-          var parents = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents();
-          var fileIter;
-          if (parents.hasNext()){
-            fileIter = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents().next().getFilesByName(filename);
-          }
->>>>>>> d08b3564daea1ca5e793dd2584c427ef32d52b0c
+          var fileIter = parentFolder.getFilesByName(filename);
           if (fileIter && fileIter.hasNext()) {
             fileId = fileIter.next().getId();
             nameIdHash[filename] = fileId;
