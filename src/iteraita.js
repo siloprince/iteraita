@@ -1162,6 +1162,19 @@ function importRange(spread){
       importSheet.deleteRows(maxRows+1,importMax-maxRows);
     }    
   }
+  var parentFolder; {
+    var rootId = DriveApp.getRootFolder().getId();
+    var parents = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents();
+    while(parents.hasNext()){
+      var candidate = parents.next();
+      if (candidate.getId()!==rootId) {
+        parentFolder = candidate;
+      }
+    }
+    if (!parentFolder) {
+      return;
+    }
+  }
   for(var fi=0;fi<formulaList.length;fi++){
     if(formulaList[fi].toString().trim().indexOf('import(')===0 &&
       itemNameList[fi].toString().trim().length > 0
@@ -1173,7 +1186,7 @@ function importRange(spread){
         if (filename in nameIdHash) {
           fileid = nameIdHash[filename];
         } else {
-          var fileIter = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents().next().getFilesByName(filename);
+          var fileIter = arentFolder.getFilesByName(filename);
           if (fileIter && fileIter.hasNext()) {
             fileId = fileIter.next().getId();
             nameIdHash[filename] = fileId;
