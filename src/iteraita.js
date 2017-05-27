@@ -1240,7 +1240,7 @@ function importRange(spread){
           }
         }
         if(!fileId){
-          Logger.log('parent not found, please open from folder or add to my drive');
+          Logger.log('parent not found, please open from folder');
           continue;
         }
         var itemName = itemNameList[fi].toString().trim();
