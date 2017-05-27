@@ -30,10 +30,18 @@ function processSingleEmptyItemName(spread, sheet, ev, targetRow, targetColumn, 
   // if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
   //                           ev.value = "x", ev.oldValue = undefined if chagned from "" to "x"
   //Logger.log(JSON.stringify(ev.value)+':'+JSON.stringify(ev.oldValue));
-  if (getObjectType(ev.value) === 'Object' && getObjectType(ev.oldValue) === 'String') {
+  // empty -> value
+  if (getObjectType(ev.value) === 'String' && getObjectType(ev.oldValue) === 'Object') {
     if (targetRow === itemNameListRange.getRow()) {
-      var formulaColumn = formulaListRange.getColumn();
-      processFormulaList(spread, sheet, targetRow, 1, formulaColumn, 1, itemNameListRange, formulaListRange);
+      var maxRows = sheet.getMaxRows();
+      var range = sheet.getRange(targetRow+4,targetColumn,maxRows-targetRow-4,1);
+      var formulas=range.getFormulas();
+      for(var fi=0;fi<formulas.length;fi++){
+        if(formulas[fi][0] || formulas[fi][0].length>0) {
+          formulas[fi][0]=formulas[fi][0]+'+0';
+        }
+      }
+      range.setFormulas(formulas);
     }
   }
 }
@@ -42,6 +50,7 @@ function processSingleEmptyFormula(spread, sheet, ev, targetRow, targetColumn, f
   // if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
   //                           ev.value = "x", ev.oldValue = undefined if chagned from "" to "x"
   //Logger.log(JSON.stringify(ev.value)+':'+JSON.stringify(ev.oldValue));
+  // value -> empty
   if (getObjectType(ev.value) === 'Object' && getObjectType(ev.oldValue) === 'String') {
     if (targetRow === formulaListRange.getRow()) {
       var maxRows = sheet.getMaxRows();
