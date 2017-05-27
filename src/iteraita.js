@@ -15,7 +15,6 @@ function onEdit(ev) {
   var targetWidth = targetRange.getWidth();
   var itemNameListRange = spread.getRangeByName("'" + sheetName + "'!__itemNameList__");
   var formulaListRange = spread.getRangeByName("'" + sheetName + "'!__formulaList__");
-  processSingleEmptyItemName(spread, sheet, ev, targetRow, targetColumn, itemNameListRange,formulaListRange);
   processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRange, formulaListRange);
   processSingleEmptyFormula(spread, sheet, ev, targetRow, targetColumn, formulaListRange);
   processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth, itemNameListRange, formulaListRange);
@@ -25,26 +24,6 @@ function getObjectType(object) {
   return Object.prototype.toString.call(object).replace(/\[object (\w+)\]$/, '$1');
 }
 
-function processSingleEmptyItemName(spread, sheet, ev, targetRow, targetColumn, itemNameListRange,formulaListRange) {
-  // if onEdit for multiple cell ev.value = {}, ev.oldValue = undefined
-  // if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
-  //                           ev.value = "x", ev.oldValue = undefined if chagned from "" to "x"
-  //Logger.log(JSON.stringify(ev.value)+':'+JSON.stringify(ev.oldValue));
-  // empty -> value
-  if (getObjectType(ev.value) === 'String' && getObjectType(ev.oldValue) === 'Object') {
-    if (targetRow === itemNameListRange.getRow()) {
-      var maxRows = sheet.getMaxRows();
-      var range = sheet.getRange(targetRow+4,targetColumn,maxRows-targetRow-4,1);
-      var formulas=range.getFormulas();
-      for(var fi=0;fi<formulas.length;fi++){
-        if(formulas[fi][0] || formulas[fi][0].length>0) {
-          formulas[fi][0]=formulas[fi][0]+'+0';
-        }
-      }
-      range.setFormulas(formulas);
-    }
-  }
-}
 function processSingleEmptyFormula(spread, sheet, ev, targetRow, targetColumn, formulaListRange) {
   // if onEdit for multiple cell ev.value = {}, ev.oldValue = undefined
   // if onEdit for single cell ev.value = { oldValue: "x"}, ev.oldValue = "x" if changed from "x" to ""
