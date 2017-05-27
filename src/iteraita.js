@@ -521,7 +521,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       // double quote to single quote
       // zen - to han - 
       var strArray=[];
-      if(str.indexOf('"')>-1 || str.index('ー')>-1){
+      if(str.indexOf('"')>-1 || str.indexOf('ー')>-1){
         var lastcode=0;
         var code=0;
         for(var si=0;si<str.length;si++){
