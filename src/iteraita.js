@@ -541,15 +541,13 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       // double quote to single quote
       // zen - to han - 
       var strArray=[];
-      if(str.indexOf('"')>-1 || str.indexOf('ー')>-1){
+      if(str.indexOf('ー')>-1){
         var lastcode=0;
         var code=0;
         for(var si=0;si<str.length;si++){
           lastcode = code;
           code = str.charCodeAt(si);
           if (code==='"'.charCodeAt(0)){
-            strArray.push('\'\'');
-          } else if (code==='"'.charCodeAt(0)){
             if (lastcode<128) {
               strArray.push('-');
             }
@@ -1363,7 +1361,17 @@ function reset(spread) {
 
 function refresh(spread) {
   var sheet = spread.getActiveSheet();
+  var import = spread.getSheetByName('_import');
+  if (import) {
+    var importrange = import.getRange('1:1');
+    var formulas = importrange.getFormulas();
+    importrange.setValue('');
+    importrange.setFormulas(formulas);
+  }
   var sheetName = sheet.getName();
+  if (sheetName==='_import'){
+    return;
+  }
   var formulaRange = spread.getRange("'" + sheetName + "'!__formulaList__");
   var maxRows = sheet.getMaxRows();
   var maxCols = sheet.getMaxColumns();
