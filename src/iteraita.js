@@ -449,73 +449,105 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     var valRow = frozenRows + 1;
     var formulaList = [];
     for (var ri = 0; ri < rawFormulaList.length; ri++) {
-      var conved = convertFormula(rawFormulaList[ri].toString().trim(), valRow);
+      var raw = rawFormulaList[ri].toString().trim();
+      var conved = convertFormula(raw, valRow);
       formulaList.push(conved);
+      if (raw !== conved) {
+        sheet.getRange(formulaListRow,ri+1).setValue(conved);
+      }
     }
     var startw = targetColumn;
     var endw = startw + targetWidth - 1;
     updateFormulas(formulaList, formulaListRange, startw, endw, itemNameList);
   }
   return;
+  function replaceAt(str,char,at){
+    return str.substr(0,at)+char+str.substr(at+1,str.length);
+  }
   function convertFormula(str, valRow) {
     if (str.length === 0) {
       return '';
     } else {
       // zen to han
+
       for (var si=0;si<str.length;si++) {
         var code = str.charCodeAt(si);
+        var char=0;
         if (code==='　'.charCodeAt(0)) {
-          str[si]=' ';
+          char=' ';
+        } else if (code==='０'.charCodeAt(0)) {
+          char='0';
+        } else if (code==='１'.charCodeAt(0)) {
+          char='1';
+        } else if (code==='２'.charCodeAt(0)) {
+          char='2';
+        } else if (code==='３'.charCodeAt(0)) {
+          char='3';
+        } else if (code==='４'.charCodeAt(0)) {
+          char='4';
+        } else if (code==='５'.charCodeAt(0)) {
+          char='5';
+        } else if (code==='６'.charCodeAt(0)) {
+          char='6';
+        } else if (code==='７'.charCodeAt(0)) {
+          char='7';
+        } else if (code==='８'.charCodeAt(0)) {
+          char='8';
+        } else if (code==='９'.charCodeAt(0)) {
+          char='9';
         } else if (code==='＋'.charCodeAt(0)) {
-          str[si]='+';
+          char='+';
         } else if (code==='＊'.charCodeAt(0)) {
-          str[si]='*';
-        } else if (code==='’'.charCodeAt(0)) {
-          str[si]='\'';
-        } else if (code==='｀'.charCodeAt(0)) {
-          str[si]='`';
-        } else if (code==='"'.charCodeAt(0)) {
-          str[si]='"';
-        } else if (code==='.'.charCodeAt(0)) {
-          str[si]='.';
-        } else if (code==='，'.charCodeAt(0)) {
-          str[si]=',';
-        } else if (code==='（'.charCodeAt(0)) {
-          str[si]='(';
-        } else if (code==='）'.charCodeAt(0)) {
-          str[si]=')';
-        } else if (code==='＜'.charCodeAt(0)) {
-          str[si]='<';
-        } else if (code==='＝'.charCodeAt(0)) {
-          str[si]='=';
-        } else if (code==='＞'.charCodeAt(0)) {
-          str[si]='>';
-        } else if (code==='｛'.charCodeAt(0)) {
-          str[si]='{';
-        } else if (code==='｝'.charCodeAt(0)) {
-          str[si]='}';
-        } else if (code==='｜'.charCodeAt(0)) {
-          str[si]='|';
-        } else if (code==='？'.charCodeAt(0)) {
-          str[si]='?';
-        } else if (code==='＄'.charCodeAt(0)) {
-          str[si]='$';
-        } else if (code==='＆'.charCodeAt(0)) {
-          str[si]='&';
-        } else if (code==='％'.charCodeAt(0)) {
-          str[si]='%';
-        } else if (code==='＃'.charCodeAt(0)) {
-          str[si]='#';
-        } else if (code==='！'.charCodeAt(0)) {
-          str[si]='!';
-        } else if (code==='＾'.charCodeAt(0)) {
-          str[si]='^';
-        } else if (code==='＠'.charCodeAt(0)) {
-          str[si]='@';
-        } else if (code===';'.charCodeAt(0)) {
-          str[si]=';';
-        } else if (code==='：'.charCodeAt(0)) {
-          str[si]=':';
+          char='*';
+        } else if (code==='｀'.charCodeAt(0)) {
+          char='`';
+        } else if (code==='"'.charCodeAt(0)) {
+          char='"';
+        } else if (code==='.'.charCodeAt(0)) {
+          char='.';
+        } else if (code==='，'.charCodeAt(0)) {
+          char=',';
+        } else if (code==='（'.charCodeAt(0)) {
+          char='(';
+        } else if (code==='）'.charCodeAt(0)) {
+          char=')';
+        } else if (code==='＜'.charCodeAt(0)) {
+          char='<';
+        } else if (code==='＝'.charCodeAt(0)) {
+          char='=';
+        } else if (code==='＞'.charCodeAt(0)) {
+          char='>';
+        } else if (code==='｛'.charCodeAt(0)) {
+          char='{';
+        } else if (code==='｝'.charCodeAt(0)) {
+          char='}';
+        } else if (code==='｜'.charCodeAt(0)) {
+          char='|';
+        } else if (code==='？'.charCodeAt(0)) {
+          char='?';
+        } else if (code==='＄'.charCodeAt(0)) {
+          char='$';
+        } else if (code==='＆'.charCodeAt(0)) {
+          char='&';
+        } else if (code==='％'.charCodeAt(0)) {
+          char='%';
+        } else if (code==='＃'.charCodeAt(0)) {
+          char='#';
+        } else if (code==='！'.charCodeAt(0)) {
+          char='!';
+        } else if (code==='＾'.charCodeAt(0)) {
+          char='^';
+        } else if (code==='＠'.charCodeAt(0)) {
+          char='@';
+        } else if (code===';'.charCodeAt(0)) {
+          char=';';
+        } else if (code==='：'.charCodeAt(0)) {
+          char=':';
+        } else if (code==='’'.charCodeAt(0)) {
+          char='\'';
+        }
+        if (char) {
+          str=replaceAt(str,char,si);
         }
       }
       // double quote to single quote
@@ -692,6 +724,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             }
             sideBadArray.push(sideBad);
             // +N("__formula__")),1/0)
+
             if (f.indexOf('\'') > -1) {
               var prev = 'if(""="$4",N("__param___")+len("$2"),1)';
               var collabel = getColumnLabel(wi + 1);
