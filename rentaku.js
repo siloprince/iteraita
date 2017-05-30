@@ -82,15 +82,15 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
     }
     // update entire names
     updateRangeNames(itemNameList, itemNameListRange, namedRanges);
-    recoverFromFormulas(formulaListRange,itemNameList);
+    recoverFromFormulas(formulaListRange, itemNameList);
   }
   return;
 
-  function recoverFromFormulas(range,itemNameList) {
+  function recoverFromFormulas(range, itemNameList) {
 
     var sheet = range.getSheet();
     var frozenRows = sheet.getFrozenRows();
-    var formulaRow = range.getRow();    
+    var formulaRow = range.getRow();
     var valRow = formulaRow + 1;
     var width = range.getWidth();
     var formulas = sheet.getRange(valRow, 1, 1, width).getFormulas()[0];
@@ -98,18 +98,18 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
     var tn_footer = '))),"")';
     for (var fi = 0; fi < formulas.length; fi++) {
       var raw = formulas[fi];
-      if (raw.length === 0 ) {
+      if (raw.length === 0) {
         continue;
       }
-      if (raw.indexOf('N("__IMPORTRANGE__")')!==-1) {
+      if (raw.indexOf('N("__IMPORTRANGE__")') !== -1) {
         if (/T\(N\("__IMPORTRANGE__"\)\)&T\(N\("([^"]+)"\)\)/.test(raw)) {
           var filename = RegExp.$1;
           var itemName = itemNameList[fi];
-          formulas[fi]= 'import('+filename+')';
-          if (updateImport(spread,itemName,filename)) {
-            sheet.getRange(formulaRow+3,fi+1).setFormula('offset(_'+itemName+','+((formulaRow+3)-1)+',0)');
+          formulas[fi] = 'import(' + filename + ')';
+          if (updateImport(spread, itemName, filename)) {
+            sheet.getRange(formulaRow + 3, fi + 1).setFormula('offset(_' + itemName + ',' + ((formulaRow + 3) - 1) + ',0)');
           } else {
-            sheet.getRange(formulaRow+3,fi+1).setFormula('');
+            sheet.getRange(formulaRow + 3, fi + 1).setFormula('');
           }
         }
         continue;
@@ -235,15 +235,15 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
       // 
       // =T("__EMPTY__")+N("__SIDE__")+T("__EMPTY__")+N("__SIDE__")+22+N("__SIDE__")+3
       var sidesep = '+N("__SIDE__")+';
-      var inits=[];
+      var inits = [];
       if (formulas[fi].indexOf(sidesep) > -1) {
         var farray = [];
         var parts = formulas[fi].split(sidesep);
         parts.pop();
         parts.shift();
-        var nonempty=0;
+        var nonempty = 0;
         for (var pi = 0; pi < parts.length; pi++) {
-          if (pi===0) {
+          if (pi === 0) {
             farray.push(parts[pi]);
           } else if (parts[pi] === 'T("__EMPTY__")') {
             if (nonempty) {
@@ -251,7 +251,7 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
             }
           } else {
             inits.push('[' + parts[pi] + ']');
-            nonempty=1;
+            nonempty = 1;
           }
         }
         formulas[fi] = farray.join('\n');
@@ -279,8 +279,8 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
         }
         formulas[fi] = farray.join('\n');
       }
-      if (inits.length>0) {
-        formulas[fi] += '\n'+inits.join('\n');
+      if (inits.length > 0) {
+        formulas[fi] += '\n' + inits.join('\n');
       }
       // =iferror(T(N(to_text(if(isnumber(222),222,T(N("__@2__"))&222)))),"")
       if (formulas[fi].indexOf('T(N("__@') > -1) {
@@ -441,7 +441,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       var conved = convertFormula(raw, valRow);
       formulaList.push(conved);
       if (raw !== conved) {
-        sheet.getRange(formulaListRow,ri+1).setValue(conved);
+        sheet.getRange(formulaListRow, ri + 1).setValue(conved);
       }
     }
     var startw = targetColumn;
@@ -449,8 +449,8 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     updateFormulas(formulaList, formulaListRange, startw, endw, itemNameList);
   }
   return;
-  function replaceAt(str,char,at){
-    return str.substr(0,at)+char+str.substr(at+1,str.length);
+  function replaceAt(str, char, at) {
+    return str.substr(0, at) + char + str.substr(at + 1, str.length);
   }
   function convertFormula(str, valRow) {
     if (str.length === 0) {
@@ -458,97 +458,97 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     } else {
       // zen to han
 
-      for (var si=0;si<str.length;si++) {
+      for (var si = 0; si < str.length; si++) {
         var code = str.charCodeAt(si);
-        var char=0;
-        if (code==='　'.charCodeAt(0)) {
-          char=' ';
-        } else if (code==='０'.charCodeAt(0)) {
-          char='0';
-        } else if (code==='１'.charCodeAt(0)) {
-          char='1';
-        } else if (code==='２'.charCodeAt(0)) {
-          char='2';
-        } else if (code==='３'.charCodeAt(0)) {
-          char='3';
-        } else if (code==='４'.charCodeAt(0)) {
-          char='4';
-        } else if (code==='５'.charCodeAt(0)) {
-          char='5';
-        } else if (code==='６'.charCodeAt(0)) {
-          char='6';
-        } else if (code==='７'.charCodeAt(0)) {
-          char='7';
-        } else if (code==='８'.charCodeAt(0)) {
-          char='8';
-        } else if (code==='９'.charCodeAt(0)) {
-          char='9';
-        } else if (code==='＋'.charCodeAt(0)) {
-          char='+';
-        } else if (code==='＊'.charCodeAt(0)) {
-          char='*';
-        } else if (code==='｀'.charCodeAt(0)) {
-          char='`';
-        } else if (code==='"'.charCodeAt(0)) {
-          char='"';
-        } else if (code==='.'.charCodeAt(0)) {
-          char='.';
-        } else if (code==='，'.charCodeAt(0)) {
-          char=',';
-        } else if (code==='（'.charCodeAt(0)) {
-          char='(';
-        } else if (code==='）'.charCodeAt(0)) {
-          char=')';
-        } else if (code==='＜'.charCodeAt(0)) {
-          char='<';
-        } else if (code==='＝'.charCodeAt(0)) {
-          char='=';
-        } else if (code==='＞'.charCodeAt(0)) {
-          char='>';
-        } else if (code==='｛'.charCodeAt(0)) {
-          char='{';
-        } else if (code==='｝'.charCodeAt(0)) {
-          char='}';
-        } else if (code==='｜'.charCodeAt(0)) {
-          char='|';
-        } else if (code==='？'.charCodeAt(0)) {
-          char='?';
-        } else if (code==='＄'.charCodeAt(0)) {
-          char='$';
-        } else if (code==='＆'.charCodeAt(0)) {
-          char='&';
-        } else if (code==='％'.charCodeAt(0)) {
-          char='%';
-        } else if (code==='＃'.charCodeAt(0)) {
-          char='#';
-        } else if (code==='！'.charCodeAt(0)) {
-          char='!';
-        } else if (code==='＾'.charCodeAt(0)) {
-          char='^';
-        } else if (code==='＠'.charCodeAt(0)) {
-          char='@';
-        } else if (code===';'.charCodeAt(0)) {
-          char=';';
-        } else if (code==='：'.charCodeAt(0)) {
-          char=':';
-        } else if (code==='’'.charCodeAt(0)) {
-          char='\'';
+        var char = 0;
+        if (code === '　'.charCodeAt(0)) {
+          char = ' ';
+        } else if (code === '０'.charCodeAt(0)) {
+          char = '0';
+        } else if (code === '１'.charCodeAt(0)) {
+          char = '1';
+        } else if (code === '２'.charCodeAt(0)) {
+          char = '2';
+        } else if (code === '３'.charCodeAt(0)) {
+          char = '3';
+        } else if (code === '４'.charCodeAt(0)) {
+          char = '4';
+        } else if (code === '５'.charCodeAt(0)) {
+          char = '5';
+        } else if (code === '６'.charCodeAt(0)) {
+          char = '6';
+        } else if (code === '７'.charCodeAt(0)) {
+          char = '7';
+        } else if (code === '８'.charCodeAt(0)) {
+          char = '8';
+        } else if (code === '９'.charCodeAt(0)) {
+          char = '9';
+        } else if (code === '＋'.charCodeAt(0)) {
+          char = '+';
+        } else if (code === '＊'.charCodeAt(0)) {
+          char = '*';
+        } else if (code === '｀'.charCodeAt(0)) {
+          char = '`';
+        } else if (code === '"'.charCodeAt(0)) {
+          char = '"';
+        } else if (code === '.'.charCodeAt(0)) {
+          char = '.';
+        } else if (code === '，'.charCodeAt(0)) {
+          char = ',';
+        } else if (code === '（'.charCodeAt(0)) {
+          char = '(';
+        } else if (code === '）'.charCodeAt(0)) {
+          char = ')';
+        } else if (code === '＜'.charCodeAt(0)) {
+          char = '<';
+        } else if (code === '＝'.charCodeAt(0)) {
+          char = '=';
+        } else if (code === '＞'.charCodeAt(0)) {
+          char = '>';
+        } else if (code === '｛'.charCodeAt(0)) {
+          char = '{';
+        } else if (code === '｝'.charCodeAt(0)) {
+          char = '}';
+        } else if (code === '｜'.charCodeAt(0)) {
+          char = '|';
+        } else if (code === '？'.charCodeAt(0)) {
+          char = '?';
+        } else if (code === '＄'.charCodeAt(0)) {
+          char = '$';
+        } else if (code === '＆'.charCodeAt(0)) {
+          char = '&';
+        } else if (code === '％'.charCodeAt(0)) {
+          char = '%';
+        } else if (code === '＃'.charCodeAt(0)) {
+          char = '#';
+        } else if (code === '！'.charCodeAt(0)) {
+          char = '!';
+        } else if (code === '＾'.charCodeAt(0)) {
+          char = '^';
+        } else if (code === '＠'.charCodeAt(0)) {
+          char = '@';
+        } else if (code === ';'.charCodeAt(0)) {
+          char = ';';
+        } else if (code === '：'.charCodeAt(0)) {
+          char = ':';
+        } else if (code === '’'.charCodeAt(0)) {
+          char = '\'';
         }
         if (char) {
-          str=replaceAt(str,char,si);
+          str = replaceAt(str, char, si);
         }
       }
       // double quote to single quote
       // zen - to han - 
-      var strArray=[];
-      if(str.indexOf('ー')>-1){
-        var lastcode=0;
-        var code=0;
-        for(var si=0;si<str.length;si++){
+      var strArray = [];
+      if (str.indexOf('ー') > -1) {
+        var lastcode = 0;
+        var code = 0;
+        for (var si = 0; si < str.length; si++) {
           lastcode = code;
           code = str.charCodeAt(si);
-          if (code==='"'.charCodeAt(0)){
-            if (lastcode<128) {
+          if (code === '"'.charCodeAt(0)) {
+            if (lastcode < 128) {
               strArray.push('-');
             }
           }
@@ -607,9 +607,9 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         if (f.length === 0) {
           sheet.getRange(row + 1, wi + 1, 1, 1).setFormula('');
           sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
-        } else if( f.indexOf('import(')>=0) {
-          var filename = f.slice(f.indexOf('(')+1, -f.length+f.indexOf(')')).trim();
-          sheet.getRange(row + 1, wi + 1, 1, 1).setFormula('T(N("__IMPORTRANGE__"))&T(N("'+filename+'"))');
+        } else if (f.indexOf('import(') >= 0) {
+          var filename = f.slice(f.indexOf('(') + 1, -f.length + f.indexOf(')')).trim();
+          sheet.getRange(row + 1, wi + 1, 1, 1).setFormula('T(N("__IMPORTRANGE__"))&T(N("' + filename + '"))');
           sheet.getRange(4, wi + 1).setFormula('iferror(sparkline(indirect(address(9,column(),4)&":"&address(' + maxRows + ',column(),4))),"")');
         } else {
           var side = 0;
@@ -620,14 +620,14 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           var orgf = f;
           if (orgf.indexOf('[') > -1) {
             side = 1;
-            var form='';
+            var form = '';
             var splitArray = orgf.split(']');
             splitArray.pop();
             for (var si = 0; si < constval; si++) {
               var sj = splitArray.length - 1 - si;
               if (sj >= 0) {
-                if (sj===0) {
-                  form = splitArray[sj].slice(0,splitArray[sj].indexOf('[')).trim();
+                if (sj === 0) {
+                  form = splitArray[sj].slice(0, splitArray[sj].indexOf('[')).trim();
                 }
                 var val = splitArray[sj].slice(splitArray[sj].indexOf('[') + 1);
                 formulaArray.unshift(val.trim());
@@ -635,8 +635,8 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                 formulaArray.unshift('');
               }
             }
-            if (form===''){
-              form = splitArray[0].slice(0,splitArray[0].indexOf('[')).trim();
+            if (form === '') {
+              form = splitArray[0].slice(0, splitArray[0].indexOf('[')).trim();
             }
             formulaArray.unshift(form);
           } else {
@@ -740,7 +740,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               var itemLabel = collabel + ':' + collabel;
 
               //var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$3.0+N("__argv__")+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),1/0)';
-              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$3.0+N("__argv__")+if(index(if("$1"="",' + itemLabel + ',$1),-$3.0-1+'+(frozenRows+1)+')="",1/0)+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),1/0)';
+              var rep = 'iferror(index(if("$1"="",' + itemLabel + ',$1),-$3.0+N("__argv__")+if(index(if("$1"="",' + itemLabel + ',$1),-$3.0-1+' + (frozenRows + 1) + ')="",1/0)+N("__prev__")-1+' + (frozenRows + 1) + '+N("__formula__")),1/0)';
 
               f = f.replace(/([^=><\|`'"\$;,{&\s\+\-\*\/\(]*)(\$+)([0-9]+)/g, rep);
               if (f.indexOf('${') > -1) {
@@ -772,7 +772,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           var _width = 1;
           // set to protocode
           if (!side) {
-              sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
+            sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + f + '))),"")');
           } else {
             var _widthcount = 1;
             // _col is +1 rigth neighbor
@@ -782,11 +782,11 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
               }
               _widthcount++;
             }
-            var store = '+N("__SIDE__")+'+convArray.join('+N("__SIDE__")+')+'+N("__SIDE__")+0';
+            var store = '+N("__SIDE__")+' + convArray.join('+N("__SIDE__")+') + '+N("__SIDE__")+0';
             sheet.getRange(row + 1, _col).setFormula('iferror(T(N(to_text(' + store + '))),"")');
             for (var ci = 1; ci <= constval; ci++) {
               if (ci >= formulaArray.length) {
-                sheet.getRange(row + 3 + (ci-1), _col + 1, 1, _widthcount).setValue('');
+                sheet.getRange(row + 3 + (ci - 1), _col + 1, 1, _widthcount).setValue('');
               } else {
                 orgf = formulaArray[ci];
                 f = convArray[ci];
@@ -839,43 +839,43 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                   }
                 }
               }
-              sheet.getRange(row + 3 + (ci-1), _col, 1, _widthcount).setFormula(vval);
+              sheet.getRange(row + 3 + (ci - 1), _col, 1, _widthcount).setFormula(vval);
             }
           }
-            f = convArray[0];
-            if (f.indexOf('N("__prev__")') > -1) {
-              // remove errors on initals
-              var errors = sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).getValues();
-              var corrects = [];
-              var hasError = false;
-              for (var ei = 0; ei < errors.length; ei++) {
-                if (/^#.*!$/.test(errors[ei][0])) {
-                  corrects.push(['']);
-                  hasError = true;
-                } else {
-                  corrects.push([errors[ei][0]])
-                }
+          f = convArray[0];
+          if (f.indexOf('N("__prev__")') > -1) {
+            // remove errors on initals
+            var errors = sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).getValues();
+            var corrects = [];
+            var hasError = false;
+            for (var ei = 0; ei < errors.length; ei++) {
+              if (/^#.*!$/.test(errors[ei][0])) {
+                corrects.push(['']);
+                hasError = true;
+              } else {
+                corrects.push([errors[ei][0]])
               }
-              if (hasError) {
-                sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).setValues(corrects);
-              }
-            } else {
-              var ff = 'iferror(if(' + f + '="","",+' + f + '),"")';
-              sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), _width).setFormula(ff);
             }
-            if (f.indexOf('__@') > -1) {
-              sheet.getRange(_row, _col, _height, _width).setFormula('');
-              var therange = sheet.getRange(_row, _col);
-              therange.setFormula(f);
-              var val = therange.getValue();
-              var time = (new Date()).getTime();
-              therange.setFormula('"' + val + '"&T(N("__#' + time + '__"))');
+            if (hasError) {
+              sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), 1).setValues(corrects);
+            }
+          } else {
+            var ff = 'iferror(if(' + f + '="","",+' + f + '),"")';
+            sheet.getRange(row + 3, _col, frozenRows + 1 - (row + 3), _width).setFormula(ff);
+          }
+          if (f.indexOf('__@') > -1) {
+            sheet.getRange(_row, _col, _height, _width).setFormula('');
+            var therange = sheet.getRange(_row, _col);
+            therange.setFormula(f);
+            var val = therange.getValue();
+            var time = (new Date()).getTime();
+            therange.setFormula('"' + val + '"&T(N("__#' + time + '__"))');
 
-            } else {
-              var ff = 'iferror('+f+',"")';
-              sheet.getRange(_row, _col, _height, _width).setFormula(ff);
-            }
-          
+          } else {
+            var ff = 'iferror(' + f + ',"")';
+            sheet.getRange(_row, _col, _height, _width).setFormula(ff);
+          }
+
         }
       }
     }
@@ -989,167 +989,167 @@ function draw(spread) {
   var formatListRange = spread.getRangeByName('__formulaList__');
   var sheet = formatListRange.getSheet();
   var formulaValues = spread.getRangeByName('__formulaList__').getValues()[0];
-  var startColumn=0;
-  var endColumn=sheet.getMaxColumns();
+  var startColumn = 0;
+  var endColumn = sheet.getMaxColumns();
 
-  for (var fi=0;fi<formulaValues.length;fi++) {
-    if (formulaValues[fi].toString().indexOf('$3+1-mod')!==-1) {
-      if (startColumn===0) {
-        startColumn = fi+1;
+  for (var fi = 0; fi < formulaValues.length; fi++) {
+    if (formulaValues[fi].toString().indexOf('$3+1-mod') !== -1) {
+      if (startColumn === 0) {
+        startColumn = fi + 1;
       }
     } else {
-      if (startColumn!==0) {
+      if (startColumn !== 0) {
         endColumn = fi;
         break;
       }
     }
   }
-  if (startColumn===0) {
+  if (startColumn === 0) {
     return;
   }
-  if ((endColumn-startColumn+1)<=0) {
+  if ((endColumn - startColumn + 1) <= 0) {
     return;
   }
   var frozenRows = sheet.getFrozenRows();
   var maxRows = sheet.getMaxRows();
-  var ymax = maxRows-frozenRows;
-  var range = sheet.getRange(frozenRows+1, startColumn, ymax,(endColumn-startColumn+1));
+  var ymax = maxRows - frozenRows;
+  var range = sheet.getRange(frozenRows + 1, startColumn, ymax, (endColumn - startColumn + 1));
   var values = range.getValues();
   var rects = [];
-  var grid=7;
-  var end=0;
-  var valcount=[];
-  for (var vi=0;vi<values[0].length;vi++) {
-    valcount[vi]=0;
-    for (var vj=0;vj<values.length;vj++) {
+  var grid = 7;
+  var end = 0;
+  var valcount = [];
+  for (var vi = 0; vi < values[0].length; vi++) {
+    valcount[vi] = 0;
+    for (var vj = 0; vj < values.length; vj++) {
       if (values[vj][vi]) {
         valcount[vi]++;
-        if (valcount[vi]>1) {
+        if (valcount[vi] > 1) {
           break;
         }
       }
     }
-    if (valcount[vi]===0) {
+    if (valcount[vi] === 0) {
       end = vi;
       break;
     }
   }
-  if (end===0) {
+  if (end === 0) {
     return;
   }
-  for (var vj=0;vj<values.length;vj++) {
-    values[vj][end]=values[vj][0];
+  for (var vj = 0; vj < values.length; vj++) {
+    values[vj][end] = values[vj][0];
   }
-  for (var vi=0;vi<end;vi++) {
-    for (var vj=0;vj<values.length;vj++) {
-      if (values[vj][vi] ) {
+  for (var vi = 0; vi < end; vi++) {
+    for (var vj = 0; vj < values.length; vj++) {
+      if (values[vj][vi]) {
         var val = Math.round(parseFloat(values[vj][vi].toString())); // this      
         var val1;
-        if (vi-1>=0) { val1 = values[vj][vi-1];} //prev
+        if (vi - 1 >= 0) { val1 = values[vj][vi - 1]; } //prev
         var val2;
-        if (vi+1<=end) { val2 = values[vj][vi+1]; } //next
+        if (vi + 1 <= end) { val2 = values[vj][vi + 1]; } //next
         var val3;
-        if (vj-1>=0) { val3 = values[vj-1][vi];} // up
+        if (vj - 1 >= 0) { val3 = values[vj - 1][vi]; } // up
         var val4;
-        if (vj+1<values.length) { val4 = values[vj+1][vi];} // down
+        if (vj + 1 < values.length) { val4 = values[vj + 1][vi]; } // down
         var val5;
-        if (vj-1>=0 && vi-1>=0) { val5 = values[vj-1][vi-1];} // up prev 5,9
+        if (vj - 1 >= 0 && vi - 1 >= 0) { val5 = values[vj - 1][vi - 1]; } // up prev 5,9
         var val6;
-        if (vj+1<values.length && vi+1<=end) { val6 = values[vj+1][vi+1];} // down next 6,10,
+        if (vj + 1 < values.length && vi + 1 <= end) { val6 = values[vj + 1][vi + 1]; } // down next 6,10,
         var val7;
-        if (vj-1>=0 && vi+1<=end) { val7 = values[vj-1][vi+1];} // up next 7,11
+        if (vj - 1 >= 0 && vi + 1 <= end) { val7 = values[vj - 1][vi + 1]; } // up next 7,11
         var val8;
-        if (vj+1<values.length && vi-1>=0) { val8 = values[vj+1][vi-1];} // down prev  8,12
+        if (vj + 1 < values.length && vi - 1 >= 0) { val8 = values[vj + 1][vi - 1]; } // down prev  8,12
         var val9;
-        if (vj-2>=0 && vi-1>=0) { val9 = values[vj-2][vi-1];} // upup prev 
+        if (vj - 2 >= 0 && vi - 1 >= 0) { val9 = values[vj - 2][vi - 1]; } // upup prev 
         var val10;
-        if (vj+2<values.length && vi+1<=end) { val10 = values[vj+2][vi+1];} // downdown next
+        if (vj + 2 < values.length && vi + 1 <= end) { val10 = values[vj + 2][vi + 1]; } // downdown next
         var val11;
-        if (vj-2>=0 && vi+1<=end) { val11 = values[vj-2][vi+1];} // upup next
+        if (vj - 2 >= 0 && vi + 1 <= end) { val11 = values[vj - 2][vi + 1]; } // upup next
         var val12;
-        if (vj+2<values.length && vi-1>=0) { val12 = values[vj+2][vi-1];} // downdown prev
-         if (valcount[vi]===1 ) {
+        if (vj + 2 < values.length && vi - 1 >= 0) { val12 = values[vj + 2][vi - 1]; } // downdown prev
+        if (valcount[vi] === 1) {
           if (val2) {
             var start;
             var max;
             val2 = Math.round(parseFloat(val2.toString()));
-            if (val2<val) {
-              start=val2;
+            if (val2 < val) {
+              start = val2;
               if (val1) {
                 val1 = Math.round(parseFloat(val1.toString()));
-                if (val1<val) {
+                if (val1 < val) {
                   max = val;
                 } else {
-                  max = val+1;
+                  max = val + 1;
                 }
               } else {
-                max = val+1;
+                max = val + 1;
               }
             } else {
-              max=val2+1;
+              max = val2 + 1;
               if (val1) {
                 val1 = Math.round(parseFloat(val1.toString()));
-                if (val1<val) {
+                if (val1 < val) {
                   start = val;
                 } else {
-                  start = val+1;
+                  start = val + 1;
                 }
               } else {
-                start = val+1;
+                start = val + 1;
               }
             }
-            for (var vk=start;vk<max;vk++) {
-              rects.push('<rect opacity="1" fill="#ff0000" x="'+(vk*grid)+'" y="'+((vj+1)*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+            for (var vk = start; vk < max; vk++) {
+              rects.push('<rect opacity="1" fill="#ff0000" x="' + (vk * grid) + '" y="' + ((vj + 1) * grid) + '" width="' + (grid) + '" height="' + (grid) + '"/>');
             }
           }
         } else {
-          var skip=false;
-          if (valcount[vi+1]===1 && val4 && !val3 && val6) {
-              skip=true;
-          } else if (valcount[vi-1]===1 && val3 && !val4 && val5) {
-              skip=true;
+          var skip = false;
+          if (valcount[vi + 1] === 1 && val4 && !val3 && val6) {
+            skip = true;
+          } else if (valcount[vi - 1] === 1 && val3 && !val4 && val5) {
+            skip = true;
           } else if (val2 && !val3) {
             val2 = Math.round(parseFloat(val2.toString()));
-            if( val >= val2) {
-              skip=true;
+            if (val >= val2) {
+              skip = true;
             }
           } else if (val1 && !val4) {
             val1 = Math.round(parseFloat(val1.toString()));
             if (val >= val1) {
-              skip=true;
+              skip = true;
             }
           }
-          if(!skip) {
-                rects.push('<rect opacity="1" fill="#ff0000" x="'+(val*grid)+'" y="'+((vj+1)*grid)+'" width="'+(grid)+'" height="'+(grid)+'"/>');
+          if (!skip) {
+            rects.push('<rect opacity="1" fill="#ff0000" x="' + (val * grid) + '" y="' + ((vj + 1) * grid) + '" width="' + (grid) + '" height="' + (grid) + '"/>');
           }
         }
       }
     }
   }
   var stroke;
-  var xmax = ymax*1.85;
-  for (var i=0;i<ymax+1;i++) {
+  var xmax = ymax * 1.85;
+  for (var i = 0; i < ymax + 1; i++) {
     stroke = "#aaaaaa";
-    if (i%10===0) {
-      stroke="#000000";
+    if (i % 10 === 0) {
+      stroke = "#000000";
     }
-    rects.push('<line x1="0" y1="'+(i*grid)+'" x2="'+(xmax*grid)+'" y2="'+(i*grid)+'" stroke="'+stroke+'" stroke-width="1"/>');
+    rects.push('<line x1="0" y1="' + (i * grid) + '" x2="' + (xmax * grid) + '" y2="' + (i * grid) + '" stroke="' + stroke + '" stroke-width="1"/>');
   }
-  for (var j=0;j<xmax+1;j++) {
+  for (var j = 0; j < xmax + 1; j++) {
     stroke = "#aaaaaa";
-    if (j%10===0) {
-      stroke="#000000";
+    if (j % 10 === 0) {
+      stroke = "#000000";
     }
-    rects.push('<line x1="'+(j*grid)+'" y1="0" x2="'+(j*grid)+'" y2="'+(ymax*grid)+'" stroke="'+stroke+'" stroke-width="1"/>');
+    rects.push('<line x1="' + (j * grid) + '" y1="0" x2="' + (j * grid) + '" y2="' + (ymax * grid) + '" stroke="' + stroke + '" stroke-width="1"/>');
   }
-  var svg = '<svg width="1000" height="1000"><g transform="translate(0,0)"><g transform="scale(1,1)">'+rects.join('')+'</g></g></svg>';
+  var svg = '<svg width="1000" height="1000"><g transform="translate(0,0)"><g transform="scale(1,1)">' + rects.join('') + '</g></g></svg>';
   var htmlOutput = HtmlService
     .createHtmlOutput(svg)
     .setWidth(1050)
     .setHeight(1610);
   SpreadsheetApp.getUi().showModalDialog(htmlOutput, '方眼紙');
 }
-function importRange(spread){
+function importRange(spread) {
   var namedRanges = spread.getNamedRanges();
   var itemNameRange = spread.getRange('__itemNameList__');
   var itemNameList = itemNameRange.getValues()[0];
@@ -1158,29 +1158,29 @@ function importRange(spread){
   var formulaRow = formulaRange.getRow();
   var sheet = formulaRange.getSheet();
   var maxRows = sheet.getMaxRows();
-  var nameIdHash={};
+  var nameIdHash = {};
   var importHash = {};
-  var importWidth=0;
+  var importWidth = 0;
   var importSheet = spread.getSheetByName("_import");
   if (!importSheet) {
-    importSheet = spread.insertSheet('_import',2);
+    importSheet = spread.insertSheet('_import', 2);
     spread.setActiveSheet(sheet);
   } else {
     var importFormulas = importSheet.getRange("1:1").getFormulas()[0];
-    for (var ii=0;ii<importFormulas.length;ii++){
-      if(/importrange\("([^"]+)","([^"]+)"&T\(N\("([^"]+)"\)\)\)/.test(importFormulas[ii])) {
+    for (var ii = 0; ii < importFormulas.length; ii++) {
+      if (/importrange\("([^"]+)","([^"]+)"&T\(N\("([^"]+)"\)\)\)/.test(importFormulas[ii])) {
         var fileId = RegExp.$1;
         var itemName = RegExp.$2;
         var filename = RegExp.$3;
         var range;
         itemName = itemName.trim();
-        importWidth=ii+1;
+        importWidth = ii + 1;
         importHash[itemName] = { fileId: fileId, row: importWidth, filename: filename };
       }
     }
-    for (var ni=0;ni<namedRanges.length;ni++) {
+    for (var ni = 0; ni < namedRanges.length; ni++) {
       var rangeName = namedRanges[ni].getName();
-      if (rangeName.indexOf('_')===0 && rangeName.indexOf('__')===-1) {
+      if (rangeName.indexOf('_') === 0 && rangeName.indexOf('__') === -1) {
         var itemName = rangeName.slice(1);
         if (itemName in importHash) {
           importHash[itemName].namedRange = namedRanges[ni];
@@ -1191,16 +1191,16 @@ function importRange(spread){
   {
     var importMax = importSheet.getMaxRows();
     var tobedel = importMax - maxRows;
-    if (tobedel>0) {
-      importSheet.deleteRows(maxRows+1,importMax-maxRows);
-    }    
+    if (tobedel > 0) {
+      importSheet.deleteRows(maxRows + 1, importMax - maxRows);
+    }
   }
   var parentFolder; {
     var rootId = DriveApp.getRootFolder().getId();
     var parents = DriveApp.getFileById(SpreadsheetApp.getActive().getId()).getParents();
-    while(parents.hasNext()){
+    while (parents.hasNext()) {
       var candidate = parents.next();
-      if (candidate.getId()!==rootId) {
+      if (candidate.getId() !== rootId) {
         parentFolder = candidate;
       }
     }
@@ -1208,11 +1208,11 @@ function importRange(spread){
       return;
     }
   }
-  for(var fi=0;fi<formulaList.length;fi++){
-    if(formulaList[fi].toString().trim().indexOf('import(')===0 &&
+  for (var fi = 0; fi < formulaList.length; fi++) {
+    if (formulaList[fi].toString().trim().indexOf('import(') === 0 &&
       itemNameList[fi].toString().trim().length > 0
     ) {
-      if(/import\(([\s\S]+)\)/i.test(formulaList[fi])) {
+      if (/import\(([\s\S]+)\)/i.test(formulaList[fi])) {
         var filename = RegExp.$1;
         filename = filename.trim();
         var fileid;
@@ -1225,86 +1225,86 @@ function importRange(spread){
             nameIdHash[filename] = fileId;
           }
         }
-        if(!fileId){
+        if (!fileId) {
           Logger.log('parent not found, please open from folder');
           continue;
         }
         var itemName = itemNameList[fi].toString().trim();
         var importData;
-        var importFormula = 'importrange("'+fileId+'","'+itemName+'"&T(N("'+filename+'")) )';
+        var importFormula = 'importrange("' + fileId + '","' + itemName + '"&T(N("' + filename + '")) )';
         if (itemName in importHash) {
           importData = importHash[itemName];
           if (importData.fileId !== fileId) {
             var range = importHash[itemName].namedRange.getRange();
-            var cell =  importSheet.getRange(1,range.getWidth());
+            var cell = importSheet.getRange(1, range.getWidth());
             cell.setFormula(importFormula);
           }
         } else {
-            var cell = importSheet.getRange(1,importWidth+1);
-            cell.setFormula(importFormula);
-            var collab = getColumnLabel(importWidth+1);
-            importWidth++;
-            var range = importSheet.getRange(collab+':'+collab);
-            spread.setNamedRange('_'+itemName, range);
+          var cell = importSheet.getRange(1, importWidth + 1);
+          cell.setFormula(importFormula);
+          var collab = getColumnLabel(importWidth + 1);
+          importWidth++;
+          var range = importSheet.getRange(collab + ':' + collab);
+          spread.setNamedRange('_' + itemName, range);
         }
-        sheet.getRange(formulaRow+1,fi+1).setFormula('T(N(offset(_'+itemName+',0,0,1,1)))&T(N("__IMPORTRANGE__"))&T(N("'+filename+'"))');
-        sheet.getRange(formulaRow+3,fi+1,maxRows-(formulaRow+3)+1,1).setValue('');
-        sheet.getRange(formulaRow+3,fi+1).setFormula('offset(_'+itemName+','+((formulaRow+3)-1)+',0)');
+        sheet.getRange(formulaRow + 1, fi + 1).setFormula('T(N(offset(_' + itemName + ',0,0,1,1)))&T(N("__IMPORTRANGE__"))&T(N("' + filename + '"))');
+        sheet.getRange(formulaRow + 3, fi + 1, maxRows - (formulaRow + 3) + 1, 1).setValue('');
+        sheet.getRange(formulaRow + 3, fi + 1).setFormula('offset(_' + itemName + ',' + ((formulaRow + 3) - 1) + ',0)');
       }
     }
   }
 }
-function updateImport(spread,_itemName,_filename){
+function updateImport(spread, _itemName, _filename) {
 
   var importSheet = spread.getSheetByName("_import");
   if (!importSheet) {
     return false;
   }
 
-    var importFormulas = importSheet.getRange("1:1").getFormulas()[0];
-    var _fileId='';
-    var importWidth=0;
-    for (var ii=0;ii<importFormulas.length;ii++){
-      if (importFormulas[ii].replace('=').length===0) {
-        break;
-      }
-      importWidth = ii+1;
-      // importrange("fileid","itemName"&T(N("filename"))
-      if(importFormulas[ii].indexOf('importrange')>-1 && 
-         importFormulas[ii].indexOf('"&T(N("')>-1
-       ) {
-        var filename = importFormulas[ii].slice(
-          importFormulas[ii].indexOf('"&T(N("')+'"&T(N("'.length,
-          -importFormulas[ii].length+importFormulas[ii].indexOf('"))')
-        );
-        var fileId = importFormulas[ii].slice(
-          importFormulas[ii].indexOf('importrange("')+'importrange("'.length,
-          -importFormulas[ii].length+importFormulas[ii].indexOf('","')
-        );
-        var itemName = importFormulas[ii].slice(
-          importFormulas[ii].indexOf('","')+'","'.length,
-          -importFormulas[ii].length+importFormulas[ii].indexOf('"&T(N("')
-        );
-        if (_filename===filename) {
-          _fileId = fileId;
-        }
-        if (_itemName===itemName && _filename===filename) {
-          return true;
-        }
-      }
+  var importFormulas = importSheet.getRange("1:1").getFormulas()[0];
+  var _fileId = '';
+  var importWidth = 0;
+  for (var ii = 0; ii < importFormulas.length; ii++) {
+    if (importFormulas[ii].replace('=').length === 0) {
+      break;
     }
-    if (_fileId===''){
-      return false;
-    }
-        var importFormula = 'importrange("'+_fileId+'","'+_itemName+'"&T(N("'+_filename+'")) )';
-        importSheet.getRange(1,importWidth+1).setFormula(importFormula);
-        var collab = getColumnLabel(importWidth+1);
-        spread.setNamedRange('_'+_itemName,importSheet.getRange(collab+':'+collab));
+    importWidth = ii + 1;
+    // importrange("fileid","itemName"&T(N("filename"))
+    if (importFormulas[ii].indexOf('importrange') > -1 &&
+      importFormulas[ii].indexOf('"&T(N("') > -1
+    ) {
+      var filename = importFormulas[ii].slice(
+        importFormulas[ii].indexOf('"&T(N("') + '"&T(N("'.length,
+        -importFormulas[ii].length + importFormulas[ii].indexOf('"))')
+      );
+      var fileId = importFormulas[ii].slice(
+        importFormulas[ii].indexOf('importrange("') + 'importrange("'.length,
+        -importFormulas[ii].length + importFormulas[ii].indexOf('","')
+      );
+      var itemName = importFormulas[ii].slice(
+        importFormulas[ii].indexOf('","') + '","'.length,
+        -importFormulas[ii].length + importFormulas[ii].indexOf('"&T(N("')
+      );
+      if (_filename === filename) {
+        _fileId = fileId;
+      }
+      if (_itemName === itemName && _filename === filename) {
         return true;
+      }
+    }
+  }
+  if (_fileId === '') {
+    return false;
+  }
+  var importFormula = 'importrange("' + _fileId + '","' + _itemName + '"&T(N("' + _filename + '")) )';
+  importSheet.getRange(1, importWidth + 1).setFormula(importFormula);
+  var collab = getColumnLabel(importWidth + 1);
+  spread.setNamedRange('_' + _itemName, importSheet.getRange(collab + ':' + collab));
+  return true;
 }
 function onOpen(spread, ui, sidebar) {
   if (!sidebar) {
-    ui.createMenu('[れん卓]').addItem('方眼紙を開く','draw').addSeparator().addItem('インポート','importRange').addItem('リフレッシュ', 'refresh').addToUi();
+    ui.createMenu('[れん卓]').addItem('方眼紙を開く', 'draw').addSeparator().addItem('インポート', 'importRange').addItem('リフレッシュ', 'refresh').addToUi();
     return;
   }
   var html = HtmlService.createHtmlOutputFromFile('Sidebar')
@@ -1369,7 +1369,7 @@ function refresh(spread) {
     importrange.setFormulas(formulas);
   }
   var sheetName = sheet.getName();
-  if (sheetName==='_import'){
+  if (sheetName === '_import') {
     return;
   }
   var formulaRange = spread.getRange("'" + sheetName + "'!__formulaList__");
