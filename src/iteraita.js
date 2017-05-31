@@ -1303,6 +1303,9 @@ function updateImport(spread, _itemName, _filename) {
   return true;
 }
 function onOpen(spread, ui, sidebar) {
+  if (getObjectType(sidebar)==='undefined') {
+      return;
+  }
   if (!sidebar) {
     ui.createMenu('[れん卓]').addItem('方眼紙を開く', 'draw').addSeparator().addItem('インポート', 'importRange').addItem('リフレッシュ', 'refresh').addToUi();
     return;
