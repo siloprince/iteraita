@@ -120,6 +120,10 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
       if (formulas[fi].indexOf(tn_header) === 0) {
         formulas[fi] = formulas[fi].slice(tn_header.length, -tn_footer.length);
       }
+      if (formulas[fi].indexOf('T(N("OLDIF"))&') > -1) {
+        var oldifArray = formulas[fi].split('T(N("OLDIF"))&');
+        formulas[fi] = oldifArray.join('');
+      }
       if (formulas[fi].indexOf('+N("__formula__")),1/0)') > -1) {
         var parts = formulas[fi].split('+N("__formula__")),1/0)');
 
@@ -457,7 +461,6 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       return '';
     } else {
       // zen to han
-
       for (var si = 0; si < str.length; si++) {
         var code = str.charCodeAt(si);
         var char = 0;
@@ -648,6 +651,47 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
             sideBad = 0;
             // side unsupported
             {
+
+              if (f.indexOf('if') > -1) {
+                var strList = [];
+                var ifList = f.split('if');
+                for (var ii = 0; ii < ifList.length; ii++) {
+                  if (ii === 0) {
+                    strList.push(ifList[ii]);
+                    continue;
+                  }
+                  var last = ifList[ii - 1].trim();
+                  var now = ifList[ii].trim();
+                  if (now.indexOf('(') === 0) {
+                    if (last.length === 0) {
+                      strList.push('T(N("OLDIF"))&if' + ifList[ii]);
+                    } else {
+                      var ifok = true;
+                      var lastchar = last.charCodeAt(last.length - 1);
+                      if (lastchar === '&'.charCodeAt(0)) {
+                      } else if (lastchar === '('.charCodeAt(0)) {
+                      } else if (lastchar === '+'.charCodeAt(0)) {
+                      } else if (lastchar === '-'.charCodeAt(0)) {
+                      } else if (lastchar === '*'.charCodeAt(0)) {
+                      } else if (lastchar === '/'.charCodeAt(0)) {
+                      } else if (lastchar === '<'.charCodeAt(0)) {
+                      } else if (lastchar === '>'.charCodeAt(0)) {
+                      } else if (lastchar === '='.charCodeAt(0)) {
+                      } else {
+                        ifok = false;
+                      }
+                      if (ifok) {
+                        strList.push('T(N("OLDIF"))&if' + ifList[ii]);
+                      } else {
+                        strList.push('if' & ifList[ii]);
+                      }
+                    }
+                  } else {
+                    strList.push('if' & ifList[ii]);
+                  }
+                }
+                f = strList.join('');
+              }
               if (f.indexOf('|') > -1) {
                 sideBad = 1;
 
@@ -1303,8 +1347,8 @@ function updateImport(spread, _itemName, _filename) {
   return true;
 }
 function onOpen(spread, ui, sidebar) {
-  if (getObjectType(sidebar)==='Object') {
-      return;
+  if (getObjectType(sidebar) === 'Object') {
+    return;
   }
   if (!sidebar) {
     ui.createMenu('[れん卓]').addItem('方眼紙を開く', 'draw').addSeparator().addItem('インポート', 'importRange').addItem('リフレッシュ', 'refresh').addToUi();
