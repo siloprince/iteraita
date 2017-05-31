@@ -547,7 +547,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         for (var si = 0; si < str.length; si++) {
           lastcode = code;
           code = str.charCodeAt(si);
-          if (code === '"'.charCodeAt(0)) {
+          if (code === 'ー'.charCodeAt(0)) {
             if (lastcode < 128) {
               strArray.push('-');
             }
