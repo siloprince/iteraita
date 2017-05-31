@@ -1303,7 +1303,7 @@ function updateImport(spread, _itemName, _filename) {
   return true;
 }
 function onOpen(spread, ui, sidebar) {
-  if (getObjectType(sidebar)==='undefined') {
+  if (getObjectType(sidebar)==='Object') {
       return;
   }
   if (!sidebar) {
