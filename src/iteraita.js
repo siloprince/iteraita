@@ -561,88 +561,48 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
       return str;
     }
   }
+
   function transformFormula(f, opt) {
-    // side unsupported
-    {
-
-      if (f.indexOf('if') > -1) {
-        var strList = [];
-        var ifList = f.split('if');
-        for (var ii = 0; ii < ifList.length; ii++) {
-          if (ii === 0) {
-            strList.push(ifList[ii]);
-            continue;
-          }
-          var last = ifList[ii - 1].trim();
-          var now = ifList[ii].trim();
-          if (now.indexOf('(') === 0) {
-            if (last.length === 0) {
-              strList.push('T(N("OLDIF"))&if' + ifList[ii]);
+    if (f.indexOf('|') > -1) {
+      var splitArray = f.split('|');
+      var valueArray = [];
+      var condArray = [];
+      valueArray.push(splitArray.shift());
+      if (splitArray[0].trim().indexOf('{') !== 0) {
+        if (splitArray.length === 1) {
+          condArray.push(splitArray[0]);
+        }
+      } else {
+        for (var si = 0; si < splitArray.length; si++) {
+          var detailArray = splitArray[si].split('}');
+          var condtmp = '';
+          var nextvalueflag = 0;
+          var nextvaluetmp = '';
+          detailArray[0] = detailArray[0].trim().slice(1);
+          for (var di = 0; di < detailArray.length; di++) {
+            if (detailArray[di].trim().lastIndexOf('{') === -1) {
+              nextvalueflag++;
+            }
+            if (nextvalueflag === 0) {
+              condtmp += detailArray[di] + '}';
+            } else if (nextvalueflag === 1) {
+              condtmp += detailArray[di];
             } else {
-              var ifok = true;
-              var lastchar = last.charCodeAt(last.length - 1);
-              if (lastchar === '&'.charCodeAt(0)) {
-              } else if (lastchar === '('.charCodeAt(0)) {
-              } else if (lastchar === '+'.charCodeAt(0)) {
-              } else if (lastchar === '-'.charCodeAt(0)) {
-              } else if (lastchar === '*'.charCodeAt(0)) {
-              } else if (lastchar === '/'.charCodeAt(0)) {
-              } else if (lastchar === '<'.charCodeAt(0)) {
-              } else if (lastchar === '>'.charCodeAt(0)) {
-              } else if (lastchar === '='.charCodeAt(0)) {
+              if (di === detailArray.length - 1) {
+                nextvaluetmp += detailArray[di];
               } else {
-                ifok = false;
-              }
-              if (ifok) {
-                strList.push('T(N("OLDIF"))&if' + ifList[ii]);
-              } else {
-                strList.push('if' & ifList[ii]);
+                nextvaluetmp += detailArray[di] + '}';
               }
             }
-          } else {
-            strList.push('if' & ifList[ii]);
           }
+          condArray.push(condtmp.trim());
+          valueArray.push(nextvaluetmp);
         }
-        f = strList.join('');
       }
-      if (f.indexOf('|') > -1) {
+      if (opt.lang === 'es6') {
+        // 
+      } else {
         opt.sideBad = 1;
-
-        var splitArray = f.split('|');
-        var valueArray = [];
-        var condArray = [];
-        valueArray.push(splitArray.shift());
-        if (splitArray[0].trim().indexOf('{') !== 0) {
-          if (splitArray.length === 1) {
-            condArray.push(splitArray[0]);
-          }
-        } else {
-          for (var si = 0; si < splitArray.length; si++) {
-            var detailArray = splitArray[si].split('}');
-            var condtmp = '';
-            var nextvalueflag = 0;
-            var nextvaluetmp = '';
-            detailArray[0] = detailArray[0].trim().slice(1);
-            for (var di = 0; di < detailArray.length; di++) {
-              if (detailArray[di].trim().lastIndexOf('{') === -1) {
-                nextvalueflag++;
-              }
-              if (nextvalueflag === 0) {
-                condtmp += detailArray[di] + '}';
-              } else if (nextvalueflag === 1) {
-                condtmp += detailArray[di];
-              } else {
-                if (di === detailArray.length - 1) {
-                  nextvaluetmp += detailArray[di];
-                } else {
-                  nextvaluetmp += detailArray[di] + '}';
-                }
-              }
-            }
-            condArray.push(condtmp.trim());
-            valueArray.push(nextvaluetmp);
-          }
-        }
         var farray = ['iferror('];
         for (var ci = 0; ci < condArray.length; ci++) {
           farray.push('iferror(');
@@ -654,7 +614,10 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         farray.push('N("__if__")+if(and(1,1/0,1))),"")');
         f = farray.join('');
       }
-      if (f.indexOf('`') > -1) {
+    }
+    if (f.indexOf('`') > -1) {
+      if (opt.lang === 'es6') {
+      } else {
         opt.sideBad = 1;
 
         var left = '$4.0+if(""="$4",N("__param___")+len("$2"),0)';
@@ -665,9 +628,9 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         f = f.replace(/([^=<>\|`'"\$;,{&\s\+\-\*\/\(]*)(`+)({([0-9--]+)}|([0-9--]*))/g, rep);
       }
     }
-    // +N("__formula__")),1/0)
-    {
-      if (f.indexOf('\'') > -1) {
+    if (f.indexOf('\'') > -1) {
+      if (opt.lang === 'es6') {
+      } else {
         var prev = 'if(""="$4",N("__param___")+len("$2"),1)';
         var collabel = getColumnLabel(opt.column + 1);
         var itemLabel = collabel + ':' + collabel;
@@ -677,13 +640,19 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
 
         f = f.replace(/([^=<>\|`'"\$;,{&\s\+\-\*\/\(]*)('+)({([0-9]+)}|([0-9]*))/g, rep);
       }
-      if (f.indexOf('pack') > -1) {
+    }
+    if (f.indexOf('pack') > -1) {
+      if (opt.lang === 'es6') {
+      } else {
         var target = 'offset($1,' + opt.frozenRows + '+N("__pack__"),0,' + (opt.maxRows - opt.frozenRows) + ',1)';
         var subtarget = target.replace('+N("__pack__")', '');
         var rep = 'iferror(index(filter(' + target + ',' + subtarget + '<>""),if(row()-' + (opt.frozenRows) + '>0,row()-' + (opt.frozenRows) + ',-1)+N("__formula__")),1/0)';
         f = f.replace(/pack\s*\(\s*([^\s\)]+)\s*\)/g, rep);
       }
-      if (f.indexOf('subseq') > -1) {
+    }
+    if (f.indexOf('subseq') > -1) {
+      if (opt.lang === 'es6') {
+      } else {
         var target = 'offset($1,' + opt.frozenRows + '+N("__subseq__"),0,' + (opt.maxRows - opt.frozenRows) + ',1)';
         var subtarget = target.replace('+N("__subseq__")', '');
         var start = 'match(index(filter(' + subtarget + ',' + subtarget + '<>""),1,1),' + subtarget + ',0)';
@@ -691,7 +660,10 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
         var rep = 'iferror(index(offset(' + target + ',' + start + '-1,0,' + end + ',1),if(row()-' + (opt.frozenRows) + '>0,row()-' + (opt.frozenRows) + ',-1)+N("__formula__")),1/0)';
         f = f.replace(/subseq\s*\(\s*([^\s\)]+)\s*\)/g, rep);
       }
-      if (f.indexOf('$') > -1) {
+    }
+    if (f.indexOf('$') > -1) {
+      if (opt.lang === 'es6') {
+      } else {
         var collabel = getColumnLabel(opt.column + 1);
         var itemLabel = collabel + ':' + collabel;
 
@@ -703,7 +675,10 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           f = f.replace(/([^=><\|`'"\$;,{&\s\+\-\*\/\(]*)(\$+){([0-9]+)}/g, rep);
         }
       }
-      if (f.indexOf('head') > -1) {
+    }
+    if (f.indexOf('head') > -1) {
+      if (opt.lang === 'es6') {
+      } else {
         var rep = 'iferror(index($1,$2+N("__head__")+N("$1")-1+if("$2"="",1,0)+' + (opt.frozenRows + 1) + '+N("__formula__")),1/0)';
         f = f.replace(/head\s*\(\s*([^\s\),]+)\s*,*((-|\+)*[0-9]*)\s*\)/g, rep);
         if (itemName.length > 0) {
@@ -713,12 +688,12 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
           }
         }
       }
-      if (f.indexOf('last') > -1) {
+    }
+    if (f.indexOf('last') > -1) {
+      if (opt.lang === 'es6') {
+      } else {
         var rep = 'iferror(index($1,-$3.0+N("__last__")+1-if("$3"="",1,0)+' + (opt.maxRows) + '+N("__formula__")),1/0)';
         f = f.replace(/last\s*\(\s*([^\s\),]+)\s*,*(-|\+)*([0-9]*)\s*\)/g, rep);
-      }
-      if (f.trim() === '') {
-        f = 'T("__EMPTY__")';
       }
     }
     return f;
@@ -853,10 +828,13 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
                 f = strList.join('');
               }
             }
-            opt.maxRows = maxRows;
-            opt.frozenRows = frozenRows;
-            opt.sideBad = 0;
-            opt.column = wi;
+            var opt = {
+              maxRows: maxRows,
+              frozenRows: frozenRows,
+              sideBad: 0,
+              column: wi,
+              lang: 'spread'
+            };
 
             f = transformFormula(f, opt);
 
