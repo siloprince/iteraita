@@ -442,7 +442,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     var formulaList = [];
     for (var ri = 0; ri < rawFormulaList.length; ri++) {
       var raw = rawFormulaList[ri].toString().trim();
-      var conved = convertFormula(raw, valRow);
+      var conved = convertFormula(raw);
       formulaList.push(conved);
       if (raw !== conved) {
         sheet.getRange(formulaListRow, ri + 1).setValue(conved);
@@ -456,7 +456,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
   function replaceAt(str, char, at) {
     return str.substr(0, at) + char + str.substr(at + 1, str.length);
   }
-  function convertFormula(str, valRow) {
+  function convertFormula(str) {
     if (str.length === 0) {
       return '';
     } else {
