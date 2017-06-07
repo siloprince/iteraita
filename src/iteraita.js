@@ -556,6 +556,8 @@ function convertZenToHan(str) {
         char = '\'';
       } else if (code === '"'.charCodeAt(0)) {
         char = '"';
+      } else if (code === '÷'.charCodeAt(0)) {
+        char = '%';
       } else if (code === '％'.charCodeAt(0)) {
         char = '%';
       } else if (code === '＆'.charCodeAt(0)) {
