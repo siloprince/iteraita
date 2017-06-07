@@ -354,7 +354,11 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
   }
   function convertItemName(str) {
     // TODO: support more bad characters
+    str = convertZenToHan(str).trim();
     str = str.toUpperCase();
+    if (/[_~\-\+\*\/<>=!#'"%&;:,\(\)\|\.\\\^\?`{}@\$]/.test(str)) {
+      str = str.replace(/[_~\-\+\*\/<>=!#'"%&;:,\(\)\|\.\\\^\?`{}@\$]/g, '＿');
+    }
     var head = str.charCodeAt(0);
     if (str.length === 1) {
       // C and R is not available
@@ -362,39 +366,6 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
         str = '英' + str;
         return str;
       }
-    }
-    if (str.indexOf('０') > -1) {
-      str = str.replace(/０/g, '0');
-    }
-    if (str.indexOf('１') > -1) {
-      str = str.replace(/１/g, '1');
-    }
-    if (str.indexOf('２') > -1) {
-      str = str.replace(/２/g, '2');
-    }
-    if (str.indexOf('３') > -1) {
-      str = str.replace(/３/g, '3');
-    }
-    if (str.indexOf('４') > -1) {
-      str = str.replace(/４/g, '4');
-    }
-    if (str.indexOf('５') > -1) {
-      str = str.replace(/５/g, '5');
-    }
-    if (str.indexOf('６') > -1) {
-      str = str.replace(/６/g, '6');
-    }
-    if (str.indexOf('７') > -1) {
-      str = str.replace(/７/g, '7');
-    }
-    if (str.indexOf('８') > -1) {
-      str = str.replace(/８/g, '8');
-    }
-    if (str.indexOf('９') > -1) {
-      str = str.replace(/９/g, '9');
-    }
-    if (/[_\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/.test(str)) {
-      str = str.replace(/[\s<>=~!#'"%&;:,\(\)\|\.\\\^\+\-\*\/\?\$　＜＞＝〜！＃’”％＆；：，（）｜．＼＾＋＊／？＄]/g, '＿');
     }
     head = str.charCodeAt(0);
     var last = str.charCodeAt(str.length - 1);
@@ -431,7 +402,227 @@ function processNameRange(spread, sheet, targetRow, targetHeight, itemNameListRa
     return str;
   }
 }
-
+function convertZenToHan(str) {
+  if (str.length === 0) {
+    return '';
+  } else {
+    // zen to han
+    for (var si = 0; si < str.length; si++) {
+      var code = str.charCodeAt(si);
+      var char = 0;
+      if (code === '　'.charCodeAt(0)) {
+        char = ' ';
+      } else if (code === '０'.charCodeAt(0)) {
+        char = '0';
+      } else if (code === '１'.charCodeAt(0)) {
+        char = '1';
+      } else if (code === '２'.charCodeAt(0)) {
+        char = '2';
+      } else if (code === '３'.charCodeAt(0)) {
+        char = '3';
+      } else if (code === '４'.charCodeAt(0)) {
+        char = '4';
+      } else if (code === '５'.charCodeAt(0)) {
+        char = '5';
+      } else if (code === '６'.charCodeAt(0)) {
+        char = '6';
+      } else if (code === '７'.charCodeAt(0)) {
+        char = '7';
+      } else if (code === '８'.charCodeAt(0)) {
+        char = '8';
+      } else if (code === '９'.charCodeAt(0)) {
+        char = '9';
+      } else if (code === 'Ａ'.charCodeAt(0)) {
+        char = 'A';
+      } else if (code === 'Ｂ'.charCodeAt(0)) {
+        char = 'B';
+      } else if (code === 'Ｃ'.charCodeAt(0)) {
+        char = 'C';
+      } else if (code === 'Ｄ'.charCodeAt(0)) {
+        char = 'D';
+      } else if (code === 'Ｅ'.charCodeAt(0)) {
+        char = 'E';
+      } else if (code === 'Ｆ'.charCodeAt(0)) {
+        char = 'F';
+      } else if (code === 'Ｇ'.charCodeAt(0)) {
+        char = 'G';
+      } else if (code === 'Ｈ'.charCodeAt(0)) {
+        char = 'H';
+      } else if (code === 'Ｉ'.charCodeAt(0)) {
+        char = 'I';
+      } else if (code === 'Ｊ'.charCodeAt(0)) {
+        char = 'J';
+      } else if (code === 'Ｋ'.charCodeAt(0)) {
+        char = 'K';
+      } else if (code === 'Ｌ'.charCodeAt(0)) {
+        char = 'L';
+      } else if (code === 'Ｍ'.charCodeAt(0)) {
+        char = 'M';
+      } else if (code === 'Ｎ'.charCodeAt(0)) {
+        char = 'N';
+      } else if (code === 'Ｏ'.charCodeAt(0)) {
+        char = 'O';
+      } else if (code === 'Ｐ'.charCodeAt(0)) {
+        char = 'P';
+      } else if (code === 'Ｑ'.charCodeAt(0)) {
+        char = 'Q';
+      } else if (code === 'Ｒ'.charCodeAt(0)) {
+        char = 'R';
+      } else if (code === 'Ｓ'.charCodeAt(0)) {
+        char = 'S';
+      } else if (code === 'Ｔ'.charCodeAt(0)) {
+        char = 'T';
+      } else if (code === 'Ｕ'.charCodeAt(0)) {
+        char = 'U';
+      } else if (code === 'Ｖ'.charCodeAt(0)) {
+        char = 'V';
+      } else if (code === 'Ｗ'.charCodeAt(0)) {
+        char = 'W';
+      } else if (code === 'Ｘ'.charCodeAt(0)) {
+        char = 'X';
+      } else if (code === 'Ｙ'.charCodeAt(0)) {
+        char = 'Y';
+      } else if (code === 'Ｚ'.charCodeAt(0)) {
+        char = 'Z';
+      } else if (code === 'ａ'.charCodeAt(0)) {
+        char = 'a';
+      } else if (code === 'ｂ'.charCodeAt(0)) {
+        char = 'b';
+      } else if (code === 'ｃ'.charCodeAt(0)) {
+        char = 'c';
+      } else if (code === 'ｄ'.charCodeAt(0)) {
+        char = 'd';
+      } else if (code === 'ｅ'.charCodeAt(0)) {
+        char = 'e';
+      } else if (code === 'ｆ'.charCodeAt(0)) {
+        char = 'f';
+      } else if (code === 'ｇ'.charCodeAt(0)) {
+        char = 'g';
+      } else if (code === 'ｈ'.charCodeAt(0)) {
+        char = 'h';
+      } else if (code === 'ｉ'.charCodeAt(0)) {
+        char = 'i';
+      } else if (code === 'ｊ'.charCodeAt(0)) {
+        char = 'j';
+      } else if (code === 'ｋ'.charCodeAt(0)) {
+        char = 'k';
+      } else if (code === 'ｌ'.charCodeAt(0)) {
+        char = 'l';
+      } else if (code === 'ｍ'.charCodeAt(0)) {
+        char = 'm';
+      } else if (code === 'ｎ'.charCodeAt(0)) {
+        char = 'n';
+      } else if (code === 'ｏ'.charCodeAt(0)) {
+        char = 'o';
+      } else if (code === 'ｐ'.charCodeAt(0)) {
+        char = 'p';
+      } else if (code === 'ｑ'.charCodeAt(0)) {
+        char = 'q';
+      } else if (code === 'ｒ'.charCodeAt(0)) {
+        char = 'r';
+      } else if (code === 'ｓ'.charCodeAt(0)) {
+        char = 's';
+      } else if (code === 'ｔ'.charCodeAt(0)) {
+        char = 't';
+      } else if (code === 'ｕ'.charCodeAt(0)) {
+        char = 'u';
+      } else if (code === 'ｖ'.charCodeAt(0)) {
+        char = 'v';
+      } else if (code === 'ｗ'.charCodeAt(0)) {
+        char = 'w';
+      } else if (code === 'ｘ'.charCodeAt(0)) {
+        char = 'x';
+      } else if (code === 'ｙ'.charCodeAt(0)) {
+        char = 'y';
+      } else if (code === 'ｚ'.charCodeAt(0)) {
+        char = 'z';
+      } else if (code === '＋'.charCodeAt(0)) {
+        char = '+';
+      } else if (code === '＊'.charCodeAt(0)) {
+        char = '*';
+      } else if (code === '／'.charCodeAt(0)) {
+        char = '/';
+      } else if (code === '＜'.charCodeAt(0)) {
+        char = '<';
+      } else if (code === '＝'.charCodeAt(0)) {
+        char = '=';
+      } else if (code === '＞'.charCodeAt(0)) {
+        char = '>';
+      } else if (code === '！'.charCodeAt(0)) {
+        char = '!';
+      } else if (code === '＃'.charCodeAt(0)) {
+        char = '#';
+      } else if (code === '’'.charCodeAt(0)) {
+        char = '\'';
+      } else if (code === '"'.charCodeAt(0)) {
+        char = '"';
+      } else if (code === '％'.charCodeAt(0)) {
+        char = '%';
+      } else if (code === '＆'.charCodeAt(0)) {
+        char = '&';
+      } else if (code === ';'.charCodeAt(0)) {
+        char = ';';
+      } else if (code === '：'.charCodeAt(0)) {
+        char = ':';
+      } else if (code === '，'.charCodeAt(0)) {
+        char = ',';
+      } else if (code === '（'.charCodeAt(0)) {
+        char = '(';
+      } else if (code === '）'.charCodeAt(0)) {
+        char = ')';
+      } else if (code === '｜'.charCodeAt(0)) {
+        char = '|';
+      } else if (code === '.'.charCodeAt(0)) {
+        char = '.';
+      } else if (code === '＼'.charCodeAt(0)) {
+        char = '\\';
+      } else if (code === '＾'.charCodeAt(0)) {
+        char = '^';
+      } else if (code === '？'.charCodeAt(0)) {
+        char = '?';
+      } else if (code === '｀'.charCodeAt(0)) {
+        char = '`';
+      } else if (code === '｛'.charCodeAt(0)) {
+        char = '{';
+      } else if (code === '｝'.charCodeAt(0)) {
+        char = '}';
+      } else if (code === '＠'.charCodeAt(0)) {
+        char = '@';
+      } else if (code === '＄'.charCodeAt(0)) {
+        char = '$';
+      }
+      if (char) {
+        str = replaceAt(str, char, si);
+      }
+    }
+    // double quote to single quote
+    // zen - to han - 
+    var strArray = [];
+    if (str.indexOf('ー') > -1) {
+      var lastcode = 0;
+      var code = 0;
+      for (var si = 0; si < str.length; si++) {
+        lastcode = code;
+        code = str.charCodeAt(si);
+        var char = str.substr(si, 1);
+        if (code === 'ー'.charCodeAt(0)) {
+          if (lastcode < 128) {
+            strArray.push('-');
+          } else {
+            strArray.push(char);
+          }
+        } else {
+          strArray.push(char);
+        }
+      }
+      str = strArray.join('');
+    }
+    return str;
+  }
+  function replaceAt(str, char, at) {
+    return str.substr(0, at) + char + str.substr(at + 1, str.length);
+  }
+}
 function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn, targetWidth, itemNameListRange, formulaListRange) {
   var itemNameList = itemNameListRange.getValues()[0];
   var formulaListRow = formulaListRange.getRow();
@@ -442,7 +633,7 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     var formulaList = [];
     for (var ri = 0; ri < rawFormulaList.length; ri++) {
       var raw = rawFormulaList[ri].toString().trim();
-      var conved = convertFormula(raw);
+      var conved = convertZenToHan(raw);
       formulaList.push(conved);
       if (raw !== conved) {
         sheet.getRange(formulaListRow, ri + 1).setValue(conved);
@@ -453,114 +644,6 @@ function processFormulaList(spread, sheet, targetRow, targetHeight, targetColumn
     updateFormulas(formulaList, formulaListRange, startw, endw, itemNameList);
   }
   return;
-  function convertFormula(str) {
-    if (str.length === 0) {
-      return '';
-    } else {
-      // zen to han
-      for (var si = 0; si < str.length; si++) {
-        var code = str.charCodeAt(si);
-        var char = 0;
-        if (code === '　'.charCodeAt(0)) {
-          char = ' ';
-        } else if (code === '０'.charCodeAt(0)) {
-          char = '0';
-        } else if (code === '１'.charCodeAt(0)) {
-          char = '1';
-        } else if (code === '２'.charCodeAt(0)) {
-          char = '2';
-        } else if (code === '３'.charCodeAt(0)) {
-          char = '3';
-        } else if (code === '４'.charCodeAt(0)) {
-          char = '4';
-        } else if (code === '５'.charCodeAt(0)) {
-          char = '5';
-        } else if (code === '６'.charCodeAt(0)) {
-          char = '6';
-        } else if (code === '７'.charCodeAt(0)) {
-          char = '7';
-        } else if (code === '８'.charCodeAt(0)) {
-          char = '8';
-        } else if (code === '９'.charCodeAt(0)) {
-          char = '9';
-        } else if (code === '＋'.charCodeAt(0)) {
-          char = '+';
-        } else if (code === '＊'.charCodeAt(0)) {
-          char = '*';
-        } else if (code === '｀'.charCodeAt(0)) {
-          char = '`';
-        } else if (code === '"'.charCodeAt(0)) {
-          char = '"';
-        } else if (code === '.'.charCodeAt(0)) {
-          char = '.';
-        } else if (code === '，'.charCodeAt(0)) {
-          char = ',';
-        } else if (code === '（'.charCodeAt(0)) {
-          char = '(';
-        } else if (code === '）'.charCodeAt(0)) {
-          char = ')';
-        } else if (code === '＜'.charCodeAt(0)) {
-          char = '<';
-        } else if (code === '＝'.charCodeAt(0)) {
-          char = '=';
-        } else if (code === '＞'.charCodeAt(0)) {
-          char = '>';
-        } else if (code === '｛'.charCodeAt(0)) {
-          char = '{';
-        } else if (code === '｝'.charCodeAt(0)) {
-          char = '}';
-        } else if (code === '｜'.charCodeAt(0)) {
-          char = '|';
-        } else if (code === '？'.charCodeAt(0)) {
-          char = '?';
-        } else if (code === '＄'.charCodeAt(0)) {
-          char = '$';
-        } else if (code === '＆'.charCodeAt(0)) {
-          char = '&';
-        } else if (code === '％'.charCodeAt(0)) {
-          char = '%';
-        } else if (code === '＃'.charCodeAt(0)) {
-          char = '#';
-        } else if (code === '！'.charCodeAt(0)) {
-          char = '!';
-        } else if (code === '＾'.charCodeAt(0)) {
-          char = '^';
-        } else if (code === '＠'.charCodeAt(0)) {
-          char = '@';
-        } else if (code === ';'.charCodeAt(0)) {
-          char = ';';
-        } else if (code === '：'.charCodeAt(0)) {
-          char = ':';
-        } else if (code === '’'.charCodeAt(0)) {
-          char = '\'';
-        }
-        if (char) {
-          str = replaceAt(str, char, si);
-        }
-      }
-      // double quote to single quote
-      // zen - to han - 
-      var strArray = [];
-      if (str.indexOf('ー') > -1) {
-        var lastcode = 0;
-        var code = 0;
-        for (var si = 0; si < str.length; si++) {
-          lastcode = code;
-          code = str.charCodeAt(si);
-          if (code === 'ー'.charCodeAt(0)) {
-            if (lastcode < 128) {
-              strArray.push('-');
-            }
-          }
-        }
-        str = strArray.join('');
-      }
-      return str;
-    }
-    function replaceAt(str, char, at) {
-      return str.substr(0, at) + char + str.substr(at + 1, str.length);
-    }
-  }
   function transformFormula(f, opt) {
     if (f.indexOf('|') > -1) {
       var splitArray = f.split('|');
